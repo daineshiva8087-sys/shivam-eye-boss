@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Product, ProductCategory, supabase } from "@/lib/supabase";
+import { useState, useEffect, useMemo } from "react";
+import { Product, supabase } from "@/lib/supabase";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/HeroSection";
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quotationModalOpen, setQuotationModalOpen] = useState(false);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
@@ -32,10 +32,9 @@ const Index = () => {
 
       if (error) throw error;
 
-      // Cast the data to match our Product interface
       const typedProducts = (data || []).map(item => ({
         ...item,
-        category: item.category as ProductCategory,
+        category: item.category as string,
         price: Number(item.price),
       }));
 
@@ -46,6 +45,12 @@ const Index = () => {
       setLoading(false);
     }
   };
+
+  // Dynamically derive categories from products
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(products.map(p => p.category))];
+    return uniqueCategories.sort();
+  }, [products]);
 
   const filteredProducts = selectedCategory === "all"
     ? products
@@ -150,6 +155,7 @@ const Index = () => {
             {/* Category Filter */}
             <div className="mb-8">
               <CategoryFilter
+                categories={categories}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
               />

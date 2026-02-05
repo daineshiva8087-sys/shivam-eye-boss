@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       products: {
         Row: {
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at: string
           description: string | null
           id: string
@@ -28,7 +28,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at?: string
           description?: string | null
           id?: string
@@ -40,7 +40,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -203,23 +203,6 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "customer"
-      product_category:
-        | "IP Camera"
-        | "Bullet Camera"
-        | "Dome Camera"
-        | "NVR"
-        | "DVR"
-        | "BNC Connector"
-        | "DC Connector"
-        | "2U Rack"
-        | "3U Rack"
-        | "4 Channel SMPS"
-        | "8 Channel SMPS"
-        | "Solar Camera"
-        | "4G SIM Camera"
-        | "PT Camera"
-        | "WiFi Camera"
-        | "Robot Camera"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -348,24 +331,6 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "customer"],
-      product_category: [
-        "IP Camera",
-        "Bullet Camera",
-        "Dome Camera",
-        "NVR",
-        "DVR",
-        "BNC Connector",
-        "DC Connector",
-        "2U Rack",
-        "3U Rack",
-        "4 Channel SMPS",
-        "8 Channel SMPS",
-        "Solar Camera",
-        "4G SIM Camera",
-        "PT Camera",
-        "WiFi Camera",
-        "Robot Camera",
-      ],
     },
   },
 } as const
