@@ -1,0 +1,167 @@
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { Camera, Menu, X, User, LogOut, Settings } from "lucide-react";
+import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+export function Header() {
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+            <Camera className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <span className="font-display text-xl font-bold text-foreground">
+            Shivam CCTV
+          </span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link
+            to="/"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Home
+          </Link>
+          <Link
+            to="/services"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Services
+          </Link>
+          <Link
+            to="/contact"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Contact
+          </Link>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  Account
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {isAdmin && (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Admin Panel
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              onClick={() => navigate("/auth")}
+              size="sm"
+              className="bg-primary hover:bg-primary/90"
+            >
+              Sign In
+            </Button>
+          )}
+        </nav>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden p-2"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+        </button>
+      </div>
+
+      {/* Mobile Navigation */}
+      {mobileMenuOpen && (
+        <nav className="md:hidden border-t border-border bg-background p-4 space-y-4 animate-fade-in">
+          <Link
+            to="/"
+            className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Home
+          </Link>
+          <Link
+            to="/services"
+            className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Services
+          </Link>
+          <Link
+            to="/contact"
+            className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Contact
+          </Link>
+
+          {user ? (
+            <>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="block text-sm font-medium text-primary hover:text-primary/90"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Admin Panel
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  handleSignOut();
+                  setMobileMenuOpen(false);
+                }}
+                className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <Button
+              onClick={() => {
+                navigate("/auth");
+                setMobileMenuOpen(false);
+              }}
+              size="sm"
+              className="w-full bg-primary hover:bg-primary/90"
+            >
+              Sign In
+            </Button>
+          )}
+        </nav>
+      )}
+    </header>
+  );
+}
