@@ -2,7 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export { supabase };
 
-export const PRODUCT_CATEGORIES = [
+// Default categories for suggestions (admin can add any custom category)
+export const DEFAULT_CATEGORIES = [
   'IP Camera',
   'Bullet Camera',
   'Dome Camera',
@@ -19,14 +20,12 @@ export const PRODUCT_CATEGORIES = [
   'PT Camera',
   'WiFi Camera',
   'Robot Camera'
-] as const;
-
-export type ProductCategory = typeof PRODUCT_CATEGORIES[number];
+];
 
 export interface Product {
   id: string;
   name: string;
-  category: ProductCategory;
+  category: string;
   image_url: string | null;
   price: number;
   stock_quantity: number;

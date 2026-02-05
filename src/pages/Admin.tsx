@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Product, ProductCategory, supabase, PRODUCT_CATEGORIES } from "@/lib/supabase";
+import { Product, supabase, DEFAULT_CATEGORIES } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,7 +53,8 @@ import { Link } from "react-router-dom";
 
 interface ProductFormData {
   name: string;
-  category: ProductCategory;
+  category: string;
+  customCategory: string;
   price: string;
   stock_quantity: string;
   is_available: boolean;
@@ -63,7 +64,8 @@ interface ProductFormData {
 
 const defaultFormData: ProductFormData = {
   name: "",
-  category: "IP Camera",
+  category: "",
+  customCategory: "",
   price: "",
   stock_quantity: "",
   is_available: true,
@@ -112,7 +114,7 @@ export default function Admin() {
       if (productsRes.data) {
         const typedProducts = productsRes.data.map(item => ({
           ...item,
-          category: item.category as ProductCategory,
+          category: item.category as string,
           price: Number(item.price),
         }));
         setProducts(typedProducts);
@@ -173,9 +175,14 @@ export default function Admin() {
         setUploadingImage(false);
       }
 
+      // Use custom category if selected, otherwise use selected category
+      const finalCategory = formData.category === "__custom__" 
+        ? formData.customCategory.trim() 
+        : formData.category;
+
       const productData = {
         name: formData.name,
-        category: formData.category,
+        category: finalCategory,
         price: parseFloat(formData.price) || 0,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         is_available: formData.is_available,
@@ -223,9 +230,12 @@ export default function Admin() {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
+    // Check if product category is in the default list
+    const isDefaultCategory = DEFAULT_CATEGORIES.includes(product.category);
     setFormData({
       name: product.name,
-      category: product.category,
+      category: isDefaultCategory ? product.category : "__custom__",
+      customCategory: isDefaultCategory ? "" : product.category,
       price: product.price.toString(),
       stock_quantity: product.stock_quantity.toString(),
       is_available: product.is_available,
@@ -563,20 +573,30 @@ export default function Admin() {
               <Select
                 value={formData.category}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, category: value as ProductCategory })
+                  setFormData({ ...formData, category: value, customCategory: value === "__custom__" ? formData.customCategory : "" })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {PRODUCT_CATEGORIES.map((category) => (
+                  {DEFAULT_CATEGORIES.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>
                   ))}
+                  <SelectItem value="__custom__">+ Add Custom Category</SelectItem>
                 </SelectContent>
               </Select>
+              {formData.category === "__custom__" && (
+                <Input
+                  placeholder="Enter custom category name"
+                  value={formData.customCategory}
+                  onChange={(e) => setFormData({ ...formData, customCategory: e.target.value })}
+                  className="mt-2"
+                  required
+                />
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

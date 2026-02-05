@@ -1,13 +1,14 @@
-import { PRODUCT_CATEGORIES, ProductCategory } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface CategoryFilterProps {
-  selectedCategory: ProductCategory | "all";
-  onCategoryChange: (category: ProductCategory | "all") => void;
+  categories: string[];
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
 }
 
 export function CategoryFilter({
+  categories,
   selectedCategory,
   onCategoryChange,
 }: CategoryFilterProps) {
@@ -22,7 +23,7 @@ export function CategoryFilter({
         >
           All Products
         </Button>
-        {PRODUCT_CATEGORIES.map((category) => (
+        {categories.map((category) => (
           <Button
             key={category}
             variant={selectedCategory === category ? "default" : "outline"}
