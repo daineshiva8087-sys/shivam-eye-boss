@@ -65,9 +65,11 @@ export default function Auth() {
         {/* Logo */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-              <Camera className="h-7 w-7 text-primary-foreground" />
-            </div>
+            <img 
+              src="/app-icon.png" 
+              alt="Shivam CCTV" 
+              className="h-12 w-12 rounded-lg object-cover"
+            />
             <span className="font-display text-2xl font-bold text-foreground">
               Shivam CCTV
             </span>
