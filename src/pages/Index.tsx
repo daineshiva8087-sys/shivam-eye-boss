@@ -8,6 +8,8 @@ import { CategoryFilter } from "@/components/CategoryFilter";
 import { QuotationModal } from "@/components/QuotationModal";
 import { ServiceModal } from "@/components/ServiceModal";
 import { FloatingButtons } from "@/components/FloatingButtons";
+import { OfferBanner } from "@/components/OfferBanner";
+import { ComboSection } from "@/components/ComboSection";
 import { Loader2, Camera, Wrench, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -36,6 +38,8 @@ const Index = () => {
         ...item,
         category: item.category as string,
         price: Number(item.price),
+        discount_percentage: Number(item.discount_percentage || 0),
+        discounted_price: Number(item.discounted_price || item.price),
       }));
 
       setProducts(typedProducts);
@@ -93,6 +97,9 @@ const Index = () => {
       <Header />
 
       <main className="flex-1">
+        {/* Offer Banner */}
+        <OfferBanner />
+
         {/* Hero Section */}
         <HeroSection onBookService={handleOpenServiceModal} />
 
@@ -139,6 +146,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* Combo Offers Section */}
+        <ComboSection />
 
         {/* Products Section */}
         <section className="py-16" id="products">

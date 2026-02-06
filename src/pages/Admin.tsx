@@ -48,14 +48,21 @@ import {
   Wrench,
   Upload,
   X,
+  Sparkles,
+  Gift,
+  Receipt,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { OfferManagement } from "@/components/admin/OfferManagement";
+import { ComboManagement } from "@/components/admin/ComboManagement";
+import { QuotationBuilder } from "@/components/admin/QuotationBuilder";
 
 interface ProductFormData {
   name: string;
   category: string;
   customCategory: string;
   price: string;
+  discount_percentage: string;
   stock_quantity: string;
   is_available: boolean;
   description: string;
@@ -67,6 +74,7 @@ const defaultFormData: ProductFormData = {
   category: "",
   customCategory: "",
   price: "",
+  discount_percentage: "0",
   stock_quantity: "",
   is_available: true,
   description: "",
@@ -79,7 +87,7 @@ export default function Admin() {
   const { toast } = useToast();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [quotations, setQuotations] = useState<any[]>([]);
+  const [quotationRequests, setQuotationRequests] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -116,10 +124,12 @@ export default function Admin() {
           ...item,
           category: item.category as string,
           price: Number(item.price),
+          discount_percentage: Number(item.discount_percentage || 0),
+          discounted_price: Number(item.discounted_price || item.price),
         }));
         setProducts(typedProducts);
       }
-      if (quotationsRes.data) setQuotations(quotationsRes.data);
+      if (quotationsRes.data) setQuotationRequests(quotationsRes.data);
       if (bookingsRes.data) setBookings(bookingsRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -168,14 +178,12 @@ export default function Admin() {
     try {
       let imageUrl = formData.image_url;
 
-      // Upload new image if selected
       if (imageFile) {
         setUploadingImage(true);
         imageUrl = await uploadImage(imageFile) || "";
         setUploadingImage(false);
       }
 
-      // Use custom category if selected, otherwise use selected category
       const finalCategory = formData.category === "__custom__" 
         ? formData.customCategory.trim() 
         : formData.category;
@@ -184,6 +192,7 @@ export default function Admin() {
         name: formData.name,
         category: finalCategory,
         price: parseFloat(formData.price) || 0,
+        discount_percentage: parseFloat(formData.discount_percentage) || 0,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         is_available: formData.is_available,
         description: formData.description || null,
@@ -230,13 +239,13 @@ export default function Admin() {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
-    // Check if product category is in the default list
     const isDefaultCategory = DEFAULT_CATEGORIES.includes(product.category);
     setFormData({
       name: product.name,
       category: isDefaultCategory ? product.category : "__custom__",
       customCategory: isDefaultCategory ? "" : product.category,
       price: product.price.toString(),
+      discount_percentage: (product.discount_percentage || 0).toString(),
       stock_quantity: product.stock_quantity.toString(),
       is_available: product.is_available,
       description: product.description || "",
@@ -318,18 +327,30 @@ export default function Admin() {
       {/* Main Content */}
       <main className="container py-8">
         <Tabs defaultValue="products">
-          <TabsList className="mb-8">
+          <TabsList className="mb-8 flex-wrap h-auto gap-1">
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
-              Products ({products.length})
+              Products
+            </TabsTrigger>
+            <TabsTrigger value="offers" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              Offers
+            </TabsTrigger>
+            <TabsTrigger value="combos" className="gap-2">
+              <Gift className="h-4 w-4" />
+              Combos
             </TabsTrigger>
             <TabsTrigger value="quotations" className="gap-2">
+              <Receipt className="h-4 w-4" />
+              Quotations
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="gap-2">
               <FileText className="h-4 w-4" />
-              Quotations ({quotations.length})
+              Requests
             </TabsTrigger>
             <TabsTrigger value="bookings" className="gap-2">
               <Wrench className="h-4 w-4" />
-              Bookings ({bookings.length})
+              Bookings
             </TabsTrigger>
           </TabsList>
 
@@ -356,6 +377,7 @@ export default function Admin() {
                       <TableHead>Name</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
+                      <TableHead>Discount</TableHead>
                       <TableHead>Stock</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -380,6 +402,13 @@ export default function Admin() {
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.category}</TableCell>
                         <TableCell>₹{product.price.toLocaleString('en-IN')}</TableCell>
+                        <TableCell>
+                          {product.discount_percentage > 0 ? (
+                            <span className="text-destructive font-medium">{product.discount_percentage}%</span>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
                         <TableCell>{product.stock_quantity}</TableCell>
                         <TableCell>
                           <span
@@ -422,10 +451,25 @@ export default function Admin() {
             )}
           </TabsContent>
 
+          {/* Offers Tab */}
+          <TabsContent value="offers">
+            <OfferManagement />
+          </TabsContent>
+
+          {/* Combos Tab */}
+          <TabsContent value="combos">
+            <ComboManagement />
+          </TabsContent>
+
           {/* Quotations Tab */}
           <TabsContent value="quotations">
+            <QuotationBuilder />
+          </TabsContent>
+
+          {/* Quotation Requests Tab */}
+          <TabsContent value="requests">
             <h2 className="font-display text-2xl font-bold mb-6">Quotation Requests</h2>
-            {quotations.length > 0 ? (
+            {quotationRequests.length > 0 ? (
               <div className="rounded-lg border border-border overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -439,7 +483,7 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {quotations.map((q) => (
+                    {quotationRequests.map((q) => (
                       <TableRow key={q.id}>
                         <TableCell className="font-medium">{q.customer_name}</TableCell>
                         <TableCell>{q.customer_phone}</TableCell>
@@ -615,19 +659,32 @@ export default function Admin() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="stock">Stock Quantity *</Label>
+                <Label htmlFor="discount">Discount (%)</Label>
                 <Input
-                  id="stock"
+                  id="discount"
                   type="number"
-                  required
                   min="0"
-                  value={formData.stock_quantity}
-                  onChange={(e) =>
-                    setFormData({ ...formData, stock_quantity: e.target.value })
-                  }
+                  max="100"
+                  value={formData.discount_percentage}
+                  onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
                   placeholder="0"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="stock">Stock Quantity *</Label>
+              <Input
+                id="stock"
+                type="number"
+                required
+                min="0"
+                value={formData.stock_quantity}
+                onChange={(e) =>
+                  setFormData({ ...formData, stock_quantity: e.target.value })
+                }
+                placeholder="0"
+              />
             </div>
 
             <div className="flex items-center justify-between">

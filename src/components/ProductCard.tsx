@@ -1,7 +1,7 @@
 import { Product } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Camera } from "lucide-react";
+import { ShoppingCart, Camera, Percent } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +20,9 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
     : product.stock_quantity > 0
     ? "stock-low"
     : "stock-out";
+
+  const hasDiscount = product.discount_percentage > 0;
+  const displayPrice = hasDiscount ? product.discounted_price : product.price;
 
   return (
     <div className="product-card rounded-xl overflow-hidden flex flex-col">
@@ -44,6 +47,12 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
         >
           {product.category}
         </Badge>
+        {hasDiscount && (
+          <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground font-bold">
+            <Percent className="h-3 w-3 mr-1" />
+            {product.discount_percentage}% OFF
+          </Badge>
+        )}
       </div>
 
       <div className="p-4 flex flex-col flex-1">
@@ -59,9 +68,16 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
 
         <div className="mt-auto space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-display text-xl font-bold text-primary">
-              ₹{product.price.toLocaleString('en-IN')}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-display text-xl font-bold text-primary">
+                ₹{displayPrice.toLocaleString('en-IN')}
+              </span>
+              {hasDiscount && (
+                <span className="text-sm text-muted-foreground line-through">
+                  ₹{product.price.toLocaleString('en-IN')}
+                </span>
+              )}
+            </div>
             <span className={`text-sm font-medium ${stockClass}`}>
               {stockStatus}
             </span>

@@ -14,11 +14,127 @@ export type Database = {
   }
   public: {
     Tables: {
+      combo_offers: {
+        Row: {
+          combo_price: number
+          created_at: string
+          description: string | null
+          discount_percentage: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          original_price: number
+          updated_at: string
+        }
+        Insert: {
+          combo_price?: number
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          original_price?: number
+          updated_at?: string
+        }
+        Update: {
+          combo_price?: number
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          original_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      combo_products: {
+        Row: {
+          combo_id: string
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          combo_id: string
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+        }
+        Update: {
+          combo_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "combo_products_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "combo_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combo_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          banner_image_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          highlight_text: string | null
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          banner_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          highlight_text?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          banner_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          highlight_text?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
           created_at: string
           description: string | null
+          discount_percentage: number | null
+          discounted_price: number | null
           id: string
           image_url: string | null
           is_available: boolean
@@ -31,6 +147,8 @@ export type Database = {
           category: string
           created_at?: string
           description?: string | null
+          discount_percentage?: number | null
+          discounted_price?: number | null
           id?: string
           image_url?: string | null
           is_available?: boolean
@@ -43,6 +161,8 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          discount_percentage?: number | null
+          discounted_price?: number | null
           id?: string
           image_url?: string | null
           is_available?: boolean
@@ -82,6 +202,67 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quotation_items: {
+        Row: {
+          combo_id: string | null
+          created_at: string
+          discount_percentage: number
+          id: string
+          item_name: string
+          product_id: string | null
+          quantity: number
+          quotation_id: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          combo_id?: string | null
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          item_name: string
+          product_id?: string | null
+          quantity?: number
+          quotation_id: string
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          combo_id?: string | null
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          item_name?: string
+          product_id?: string | null
+          quantity?: number
+          quotation_id?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "combo_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotation_requests: {
         Row: {
@@ -126,6 +307,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quotations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_address: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          discount_amount: number
+          discount_percentage: number
+          id: string
+          notes: string | null
+          quotation_number: string
+          status: string
+          subtotal: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          discount_amount?: number
+          discount_percentage?: number
+          id?: string
+          notes?: string | null
+          quotation_number: string
+          status?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          discount_amount?: number
+          discount_percentage?: number
+          id?: string
+          notes?: string | null
+          quotation_number?: string
+          status?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       service_bookings: {
         Row: {
@@ -193,6 +428,7 @@ export type Database = {
     }
     Functions: {
       admin_exists: { Args: never; Returns: boolean }
+      generate_quotation_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
