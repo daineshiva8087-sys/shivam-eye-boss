@@ -113,60 +113,7 @@ const Index = () => {
         {/* Hero Section */}
         <HeroSection onBookService={handleOpenServiceModal} />
 
-        {/* About Section */}
-        <AboutSection />
-
-        {/* Services Section */}
-        <section className="py-16 bg-card">
-          <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Services
-              </h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                Complete security solutions tailored to your needs
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {services.map((service, index) => (
-                <div
-                  key={index}
-                  className="product-card rounded-xl p-6 text-center space-y-4 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                    <service.icon className="h-7 w-7 text-primary" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-foreground">
-                    {service.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {service.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center mt-8">
-              <Button
-                size="lg"
-                onClick={handleOpenServiceModal}
-                className="bg-primary hover:bg-primary/90"
-              >
-                Book a Service
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Service Charges Section */}
-        <ServiceChargesSection />
-
-        {/* Combo Offers Section */}
-        <ComboSection />
-
-        {/* Products Section */}
+        {/* Products Section - Show First */}
         <section className="py-16" id="products">
           <div className="container">
             <div className="text-center mb-12">
@@ -217,6 +164,59 @@ const Index = () => {
             )}
           </div>
         </section>
+
+        {/* Combo Offers Section */}
+        <ComboSection />
+
+        {/* Service Charges Section */}
+        <ServiceChargesSection />
+
+        {/* Services Section */}
+        <section className="py-16 bg-card">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Our Services
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Complete security solutions tailored to your needs
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {services.map((service, index) => (
+                <div
+                  key={index}
+                  className="product-card rounded-xl p-6 text-center space-y-4 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                    <service.icon className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {service.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Button
+                size="lg"
+                onClick={handleOpenServiceModal}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Book a Service
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* About Section - Now at Bottom */}
+        <AboutSection />
       </main>
 
       <Footer />
