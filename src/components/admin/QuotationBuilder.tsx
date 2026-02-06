@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ import {
   Share2,
   Eye,
   Pencil,
+  Wrench,
 } from "lucide-react";
 
 interface QuotationItem {
@@ -49,6 +51,12 @@ interface QuotationItem {
   total: number;
 }
 
+interface ServiceCharge {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface QuotationFormData {
   customerName: string;
   customerPhone: string;
@@ -57,6 +65,7 @@ interface QuotationFormData {
   discountPercentage: string;
   notes: string;
   items: QuotationItem[];
+  selectedServices: string[];
 }
 
 interface Quotation {
@@ -83,6 +92,7 @@ const defaultFormData: QuotationFormData = {
   discountPercentage: "0",
   notes: "",
   items: [],
+  selectedServices: [],
 };
 
 export function QuotationBuilder() {
@@ -91,6 +101,7 @@ export function QuotationBuilder() {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [combos, setCombos] = useState<any[]>([]);
+  const [services, setServices] = useState<ServiceCharge[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState<QuotationFormData>(defaultFormData);
@@ -103,10 +114,11 @@ export function QuotationBuilder() {
 
   const fetchData = async () => {
     try {
-      const [quotationsRes, productsRes, combosRes] = await Promise.all([
+      const [quotationsRes, productsRes, combosRes, servicesRes] = await Promise.all([
         supabase.from("quotations").select("*").order("created_at", { ascending: false }),
         supabase.from("products").select("*").order("name"),
         supabase.from("combo_offers").select("*").eq("is_active", true).order("name"),
+        supabase.from("service_charges").select("*").eq("is_active", true).order("name"),
       ]);
 
       if (quotationsRes.data) {
@@ -125,6 +137,9 @@ export function QuotationBuilder() {
       }
       if (combosRes.data) {
         setCombos(combosRes.data.map((c) => ({ ...c, combo_price: Number(c.combo_price) })));
+      }
+      if (servicesRes.data) {
+        setServices(servicesRes.data.map((s) => ({ ...s, price: Number(s.price) })));
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -190,11 +205,25 @@ export function QuotationBuilder() {
   };
 
   const calculateTotals = () => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.total, 0);
+    const itemsSubtotal = formData.items.reduce((sum, item) => sum + item.total, 0);
+    const servicesTotal = formData.selectedServices.reduce((sum, serviceId) => {
+      const service = services.find((s) => s.id === serviceId);
+      return sum + (service?.price || 0);
+    }, 0);
+    const subtotal = itemsSubtotal + servicesTotal;
     const discountPercentage = parseFloat(formData.discountPercentage) || 0;
     const discountAmount = (subtotal * discountPercentage) / 100;
     const totalAmount = subtotal - discountAmount;
-    return { subtotal, discountAmount, discountPercentage, totalAmount };
+    return { subtotal, itemsSubtotal, servicesTotal, discountAmount, discountPercentage, totalAmount };
+  };
+
+  const handleServiceToggle = (serviceId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedServices: prev.selectedServices.includes(serviceId)
+        ? prev.selectedServices.filter((id) => id !== serviceId)
+        : [...prev.selectedServices, serviceId],
+    }));
   };
 
   const generateNumber = async (): Promise<string> => {
@@ -374,6 +403,7 @@ export function QuotationBuilder() {
         discount: Number(item.discount_percentage),
         total: Number(item.total_price),
       })),
+      selectedServices: [],
     });
     setModalOpen(true);
   };
@@ -384,7 +414,7 @@ export function QuotationBuilder() {
     setModalOpen(true);
   };
 
-  const { subtotal, discountAmount, totalAmount } = calculateTotals();
+  const { subtotal, itemsSubtotal, servicesTotal, discountAmount, totalAmount } = calculateTotals();
 
   if (loading) {
     return (
@@ -586,6 +616,33 @@ export function QuotationBuilder() {
               )}
             </div>
 
+            {/* Service Charges */}
+            {services.length > 0 && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Wrench className="h-4 w-4" />
+                  Service Charges
+                </Label>
+                <div className="grid grid-cols-1 gap-2 p-3 bg-muted/50 rounded-lg">
+                  {services.map((service) => (
+                    <label
+                      key={service.id}
+                      className="flex items-center justify-between cursor-pointer hover:bg-muted p-2 rounded"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={formData.selectedServices.includes(service.id)}
+                          onCheckedChange={() => handleServiceToggle(service.id)}
+                        />
+                        <span>{service.name}</span>
+                      </div>
+                      <span className="font-medium">₹{service.price.toLocaleString("en-IN")}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Discount and Notes */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -611,9 +668,21 @@ export function QuotationBuilder() {
             </div>
 
             {/* Summary */}
-            {formData.items.length > 0 && (
+            {(formData.items.length > 0 || formData.selectedServices.length > 0) && (
               <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
+                {itemsSubtotal > 0 && (
+                  <div className="flex justify-between">
+                    <span>Products/Combos:</span>
+                    <span>₹{itemsSubtotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                {servicesTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span>Service Charges:</span>
+                    <span>₹{servicesTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-medium border-t pt-2">
                   <span>Subtotal:</span>
                   <span>₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
