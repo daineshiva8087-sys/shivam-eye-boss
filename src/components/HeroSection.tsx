@@ -27,16 +27,19 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
             <span>Trusted Security Partner</span>
           </div>
 
-          {/* Marathi Headline */}
+          {/* Brand Name */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground animate-slide-up">
-            <span className="text-gradient">जालना मधील नंबर 1</span>
-            <br />
-            CCTV सोल्युशन
+            SHIVAM CCTV
           </h1>
 
-          {/* English Subtitle */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Professional CCTV installation, surveillance systems, and security solutions for homes and businesses
+          {/* Marathi Tagline */}
+          <p className="text-2xl md:text-3xl font-semibold text-gradient animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            जालना मधील नं 1 CCTV सोल्युशन
+          </p>
+
+          {/* Since 2016 */}
+          <p className="text-lg md:text-xl text-muted-foreground animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            2016 पासून जालनेकरच्या सेवेत
           </p>
 
           {/* CTA Buttons */}

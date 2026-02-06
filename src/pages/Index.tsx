@@ -12,6 +12,7 @@ import { OfferBanner } from "@/components/OfferBanner";
 import { ComboSection } from "@/components/ComboSection";
 import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
+import { AboutSection } from "@/components/AboutSection";
 import { Loader2, Camera, Wrench, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -111,6 +112,9 @@ const Index = () => {
 
         {/* Hero Section */}
         <HeroSection onBookService={handleOpenServiceModal} />
+
+        {/* About Section */}
+        <AboutSection />
 
         {/* Services Section */}
         <section className="py-16 bg-card">
