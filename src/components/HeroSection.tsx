@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BUSINESS_INFO } from "@/lib/supabase";
-import { Shield, Phone, MapPin, Eye } from "lucide-react";
+import { Shield, Phone, MapPin, Eye, MessageCircle } from "lucide-react";
 
 interface HeroSectionProps {
   onBookService: () => void;
@@ -13,6 +13,16 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
 
   const handleCall = () => {
     window.open(`tel:${BUSINESS_INFO.phone}`, "_self");
+  };
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(
+      `नमस्कार,\nमी Shivam CCTV App वरून संपर्क करत आहे.\nकृपया माहिती द्या.`
+    );
+    window.open(
+      `https://wa.me/${BUSINESS_INFO.whatsappNumber}?text=${message}`,
+      "_blank"
+    );
   };
 
   return (
@@ -43,11 +53,11 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <Button
               size="lg"
               onClick={onBookService}
-              className="bg-primary hover:bg-primary/90 text-lg px-8"
+              className="bg-primary hover:bg-primary/90 text-lg px-6"
             >
               <Eye className="h-5 w-5 mr-2" />
               Free Site Survey
@@ -56,10 +66,18 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
               size="lg"
               variant="outline"
               onClick={handleCall}
-              className="text-lg px-8"
+              className="text-lg px-6"
             >
               <Phone className="h-5 w-5 mr-2" />
               Call Now
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleWhatsApp}
+              className="bg-[#25D366] hover:bg-[#20BD5A] text-white text-lg px-6"
+            >
+              <MessageCircle className="h-5 w-5 mr-2" />
+              WhatsApp Now
             </Button>
           </div>
 

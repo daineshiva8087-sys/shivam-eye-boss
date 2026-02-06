@@ -13,8 +13,9 @@ import { ComboSection } from "@/components/ComboSection";
 import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { AboutSection } from "@/components/AboutSection";
-import { Loader2, Camera, Wrench, Shield, CheckCircle } from "lucide-react";
+import { Loader2, Camera, Wrench, Shield, CheckCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -24,6 +25,7 @@ const Index = () => {
   const [quotationModalOpen, setQuotationModalOpen] = useState(false);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchProducts();
@@ -60,9 +62,57 @@ const Index = () => {
     return uniqueCategories.sort();
   }, [products]);
 
-  const filteredProducts = selectedCategory === "all"
-    ? products
-    : products.filter((p) => p.category === selectedCategory);
+  // Filter products by category and search query
+  const filteredProducts = useMemo(() => {
+    let filtered = selectedCategory === "all"
+      ? products
+      : products.filter((p) => p.category === selectedCategory);
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      
+      // Parse price keywords like "under 2000", "below 3000"
+      const priceMatch = query.match(/(?:under|below|less than)\s*(\d+)/i);
+      const maxPrice = priceMatch ? parseInt(priceMatch[1]) : null;
+      
+      filtered = filtered.filter((product) => {
+        const name = product.name.toLowerCase();
+        const category = product.category.toLowerCase();
+        const description = (product.description || "").toLowerCase();
+        const price = product.discounted_price || product.price;
+        
+        // Check if query matches name, category, or description
+        const textMatch = 
+          name.includes(query) ||
+          category.includes(query) ||
+          description.includes(query) ||
+          // Common search terms mapping
+          (query.includes("bullet") && category.includes("bullet")) ||
+          (query.includes("dome") && category.includes("dome")) ||
+          (query.includes("ip") && category.includes("ip")) ||
+          (query.includes("wifi") && (category.includes("wifi") || name.includes("wifi"))) ||
+          (query.includes("solar") && (category.includes("solar") || name.includes("solar"))) ||
+          (query.includes("indoor") && description.includes("indoor")) ||
+          (query.includes("outdoor") && description.includes("outdoor")) ||
+          // Resolution searches
+          (query.includes("2mp") && (name.includes("2mp") || description.includes("2mp"))) ||
+          (query.includes("4mp") && (name.includes("4mp") || description.includes("4mp"))) ||
+          (query.includes("5mp") && (name.includes("5mp") || description.includes("5mp"))) ||
+          (query.includes("8mp") && (name.includes("8mp") || description.includes("8mp"))) ||
+          // Brand searches
+          (query.includes("cp plus") && name.includes("cp plus")) ||
+          (query.includes("hikvision") && name.includes("hikvision")) ||
+          (query.includes("dahua") && name.includes("dahua"));
+        
+        // Check price filter
+        const priceMatch = maxPrice ? price <= maxPrice : true;
+        
+        return textMatch || (maxPrice && priceMatch);
+      });
+    }
+    
+    return filtered;
+  }, [products, selectedCategory, searchQuery]);
 
   const handleRequestQuote = (product: Product) => {
     setSelectedProduct(product);
@@ -113,6 +163,24 @@ const Index = () => {
         {/* Hero Section */}
         <HeroSection onBookService={handleOpenServiceModal} />
 
+        {/* Search Bar Section */}
+        <section className="py-6 bg-muted/30">
+          <div className="container">
+            <div className="max-w-2xl mx-auto">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search camera, brand, MP, price..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-4 py-6 text-base rounded-xl border-border bg-background shadow-sm"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Products Section - Show First */}
         <section className="py-16" id="products">
           <div className="container">
@@ -130,7 +198,10 @@ const Index = () => {
               <CategoryFilter
                 categories={categories}
                 selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
+                onCategoryChange={(cat) => {
+                  setSelectedCategory(cat);
+                  setSearchQuery(""); // Clear search when changing category
+                }}
               />
             </div>
 
@@ -158,8 +229,8 @@ const Index = () => {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No products available in this category.</p>
-                <p className="text-sm mt-2">Check back soon for new products!</p>
+                <p>{searchQuery ? "No products found" : "No products available in this category."}</p>
+                {!searchQuery && <p className="text-sm mt-2">Check back soon for new products!</p>}
               </div>
             )}
           </div>
