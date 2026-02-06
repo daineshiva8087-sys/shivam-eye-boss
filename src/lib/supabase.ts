@@ -31,6 +31,8 @@ export interface Product {
   stock_quantity: number;
   is_available: boolean;
   description: string | null;
+  discount_percentage: number;
+  discounted_price: number;
   created_at: string;
   updated_at: string;
 }
