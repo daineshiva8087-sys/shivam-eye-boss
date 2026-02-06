@@ -84,7 +84,10 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
           </div>
 
           <Button
-            onClick={() => onRequestQuote(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRequestQuote(product);
+            }}
             disabled={!product.is_available}
             className="w-full bg-primary hover:bg-primary/90"
           >

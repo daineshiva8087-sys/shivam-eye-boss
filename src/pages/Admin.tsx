@@ -56,6 +56,8 @@ import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
 import { ComboManagement } from "@/components/admin/ComboManagement";
 import { QuotationBuilder } from "@/components/admin/QuotationBuilder";
+import { ServiceChargesManagement } from "@/components/admin/ServiceChargesManagement";
+import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 
 interface ProductFormData {
   name: string;
@@ -332,6 +334,10 @@ export default function Admin() {
               <Package className="h-4 w-4" />
               Products
             </TabsTrigger>
+            <TabsTrigger value="services" className="gap-2">
+              <Wrench className="h-4 w-4" />
+              Services
+            </TabsTrigger>
             <TabsTrigger value="offers" className="gap-2">
               <Sparkles className="h-4 w-4" />
               Offers
@@ -449,6 +455,11 @@ export default function Admin() {
                 <p>No products yet. Add your first product!</p>
               </div>
             )}
+          </TabsContent>
+
+          {/* Services Tab */}
+          <TabsContent value="services">
+            <ServiceChargesManagement />
           </TabsContent>
 
           {/* Offers Tab */}
@@ -710,6 +721,13 @@ export default function Admin() {
                 rows={3}
               />
             </div>
+
+            {/* Additional Images Manager - only show when editing */}
+            {editingProduct && (
+              <div className="border-t pt-4">
+                <ProductImagesManager productId={editingProduct.id} />
+              </div>
+            )}
 
             <div className="flex gap-3 pt-4">
               <Button

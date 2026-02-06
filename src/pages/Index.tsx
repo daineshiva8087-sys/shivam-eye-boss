@@ -10,6 +10,8 @@ import { ServiceModal } from "@/components/ServiceModal";
 import { FloatingButtons } from "@/components/FloatingButtons";
 import { OfferBanner } from "@/components/OfferBanner";
 import { ComboSection } from "@/components/ComboSection";
+import { ServiceChargesSection } from "@/components/ServiceChargesSection";
+import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { Loader2, Camera, Wrench, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -20,6 +22,7 @@ const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quotationModalOpen, setQuotationModalOpen] = useState(false);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -63,10 +66,16 @@ const Index = () => {
   const handleRequestQuote = (product: Product) => {
     setSelectedProduct(product);
     setQuotationModalOpen(true);
+    setDetailModalOpen(false);
   };
 
   const handleOpenServiceModal = () => {
     setServiceModalOpen(true);
+  };
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setDetailModalOpen(true);
   };
 
   const services = [
@@ -147,6 +156,9 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Service Charges Section */}
+        <ServiceChargesSection />
+
         {/* Combo Offers Section */}
         <ComboSection />
 
@@ -181,8 +193,9 @@ const Index = () => {
                 {filteredProducts.map((product, index) => (
                   <div
                     key={product.id}
-                    className="animate-fade-in"
+                    className="animate-fade-in cursor-pointer"
                     style={{ animationDelay: `${index * 0.05}s` }}
+                    onClick={() => handleProductClick(product)}
                   >
                     <ProductCard
                       product={product}
@@ -214,6 +227,12 @@ const Index = () => {
       <ServiceModal
         open={serviceModalOpen}
         onOpenChange={setServiceModalOpen}
+      />
+      <ProductDetailModal
+        product={selectedProduct}
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        onRequestQuote={() => handleRequestQuote(selectedProduct!)}
       />
     </div>
   );
