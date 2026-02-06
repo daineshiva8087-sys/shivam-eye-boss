@@ -70,7 +70,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Shivam CCTV. All rights reserved.
+          © Shivam CCTV | 2016 पासून जालनेकरच्या सेवेत
         </div>
       </div>
     </footer>
