@@ -89,8 +89,16 @@ export function BannerSlider() {
   if (loading || banners.length === 0) return null;
 
   return (
-    <section className="w-full py-4 md:py-6 bg-gradient-to-b from-background via-muted/20 to-background">
-      <div className="container px-3 md:px-4">
+    <section className="w-full py-6 md:py-10 relative">
+      {/* Background with subtle separation */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/10 to-background" />
+      
+      {/* Subtle backdrop glow for premium feel */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[200%] bg-primary/5 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="container px-4 md:px-6 relative z-10">
         <Carousel
           setApi={setApi}
           opts={{
@@ -99,12 +107,12 @@ export function BannerSlider() {
           }}
           className="w-full"
         >
-          <CarouselContent className="-ml-2 md:-ml-4">
+          <CarouselContent className="-ml-3 md:-ml-4">
             {banners.map((banner) => {
               const content = getBannerContent(banner);
               
               return (
-                <CarouselItem key={banner.id} className="pl-2 md:pl-4">
+                <CarouselItem key={banner.id} className="pl-3 md:pl-4">
                   <BannerCard
                     title={banner.title}
                     imageUrl={banner.image_url}
@@ -119,48 +127,48 @@ export function BannerSlider() {
             })}
           </CarouselContent>
 
-          {/* Navigation arrows - Only show if multiple banners */}
+          {/* Premium Navigation arrows */}
           {banners.length > 1 && (
             <>
               <CarouselPrevious 
                 className={cn(
-                  "left-1 md:left-4",
-                  "h-8 w-8 md:h-10 md:w-10",
-                  "bg-background/90 backdrop-blur-sm",
-                  "border-border/50 shadow-lg",
-                  "hover:bg-background hover:scale-105",
-                  "transition-all duration-200",
-                  "opacity-70 hover:opacity-100"
+                  "left-2 md:left-6",
+                  "h-9 w-9 md:h-11 md:w-11",
+                  "bg-background/95 backdrop-blur-md",
+                  "border border-white/20 shadow-xl",
+                  "hover:bg-background hover:scale-110 hover:border-primary/30",
+                  "transition-all duration-300",
+                  "opacity-80 hover:opacity-100"
                 )} 
               />
               <CarouselNext 
                 className={cn(
-                  "right-1 md:right-4",
-                  "h-8 w-8 md:h-10 md:w-10",
-                  "bg-background/90 backdrop-blur-sm",
-                  "border-border/50 shadow-lg",
-                  "hover:bg-background hover:scale-105",
-                  "transition-all duration-200",
-                  "opacity-70 hover:opacity-100"
+                  "right-2 md:right-6",
+                  "h-9 w-9 md:h-11 md:w-11",
+                  "bg-background/95 backdrop-blur-md",
+                  "border border-white/20 shadow-xl",
+                  "hover:bg-background hover:scale-110 hover:border-primary/30",
+                  "transition-all duration-300",
+                  "opacity-80 hover:opacity-100"
                 )} 
               />
             </>
           )}
         </Carousel>
 
-        {/* Dot Indicators - Premium style */}
+        {/* Premium Dot Indicators */}
         {banners.length > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
+          <div className="flex justify-center gap-2.5 mt-5">
             {banners.map((_, index) => (
               <button
                 key={index}
                 onClick={() => api?.scrollTo(index)}
                 className={cn(
-                  "rounded-full transition-all duration-300 ease-out",
+                  "rounded-full transition-all duration-400 ease-out",
                   "focus:outline-none focus:ring-2 focus:ring-primary/50",
                   current === index
-                    ? "bg-primary w-8 h-2.5 shadow-md shadow-primary/30"
-                    : "bg-primary/30 hover:bg-primary/50 w-2.5 h-2.5 hover:scale-110"
+                    ? "bg-primary w-9 h-3 shadow-lg shadow-primary/40"
+                    : "bg-primary/25 hover:bg-primary/45 w-3 h-3 hover:scale-125"
                 )}
                 aria-label={`Go to slide ${index + 1}`}
               />
