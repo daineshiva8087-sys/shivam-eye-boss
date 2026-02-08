@@ -25,6 +25,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus,
@@ -33,13 +39,14 @@ import {
   Loader2,
   Upload,
   Image,
-  GripVertical,
   ArrowUp,
   ArrowDown,
   Eye,
   Smartphone,
+  Check,
+  X,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface Banner {
   id: string;
@@ -75,7 +82,7 @@ interface BannerFormData {
 const defaultFormData: BannerFormData = {
   title: "",
   image_url: "",
-  is_active: true,
+  is_active: false, // Default OFF for new banners
   start_date: "",
   end_date: "",
   start_time: "",
@@ -433,17 +440,41 @@ export function BannerManagement() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={banner.is_active}
-                        onCheckedChange={() => handleToggleActive(banner)}
-                      />
-                      {isBannerCurrentlyActive(banner) ? (
-                        <Badge className="bg-cctv-success/20 text-cctv-success">Live</Badge>
-                      ) : (
-                        <Badge variant="secondary">Off</Badge>
-                      )}
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActive(banner)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-200 cursor-pointer border-2",
+                              banner.is_active
+                                ? "bg-cctv-success/20 text-cctv-success border-cctv-success/40 hover:bg-cctv-success/30"
+                                : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+                            )}
+                          >
+                            {banner.is_active ? (
+                              <>
+                                <Check className="h-4 w-4" />
+                                <span>ON</span>
+                              </>
+                            ) : (
+                              <>
+                                <X className="h-4 w-4" />
+                                <span>OFF</span>
+                              </>
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {banner.is_active
+                              ? "Banner will be visible on Home Page"
+                              : "Banner is hidden from Home Page"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
