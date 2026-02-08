@@ -172,9 +172,6 @@ const Index = () => {
       <Header />
 
       <main className="flex-1">
-        {/* Top Banner Slider - Flipkart style */}
-        <BannerSlider />
-
         {/* Offer Banner */}
         <OfferBanner />
 
@@ -199,7 +196,10 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Products Section - Show First */}
+        {/* Banner Slider - After Search, Before Products */}
+        <BannerSlider />
+
+        {/* Products Section */}
         <section className="py-16" id="products">
           <div className="container">
             <div className="text-center mb-12">
