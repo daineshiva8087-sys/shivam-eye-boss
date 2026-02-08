@@ -7,13 +7,13 @@ export function useBanners() {
   const [loading, setLoading] = useState(true);
 
   const isBannerCurrentlyActive = useCallback((banner: Banner): boolean => {
+    // Check is_active toggle first
     if (!banner.is_active) {
       return false;
     }
 
+    // Get current LOCAL date and time
     const now = new Date();
-    
-    // Use LOCAL date and time consistently (not UTC)
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
@@ -23,29 +23,28 @@ export function useBanners() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const currentTime = `${hours}:${minutes}`;
 
-    console.log(`[Banner] Date: ${currentDate}, Time: ${currentTime}`);
-
     // Check date range - if dates are set, enforce them
     if (banner.start_date && currentDate < banner.start_date) {
-      console.log(`[Banner] Inactive: before start_date (${banner.start_date})`);
+      console.log(`[Banner "${banner.title}"] Scheduled for future: starts ${banner.start_date}`);
       return false;
     }
     if (banner.end_date && currentDate > banner.end_date) {
-      console.log(`[Banner] Inactive: after end_date (${banner.end_date})`);
+      console.log(`[Banner "${banner.title}"] Expired: ended ${banner.end_date}`);
       return false;
     }
     
-    // Check time range only if BOTH are set
+    // Check time range only if BOTH start and end times are set
     if (banner.start_time && banner.end_time) {
       const startTime = banner.start_time.substring(0, 5);
       const endTime = banner.end_time.substring(0, 5);
+      
       if (currentTime < startTime || currentTime > endTime) {
-        console.log(`[Banner] Inactive: outside time window (${startTime}-${endTime})`);
+        console.log(`[Banner "${banner.title}"] Outside time window: ${startTime}-${endTime}, current: ${currentTime}`);
         return false;
       }
     }
 
-    console.log(`[Banner] ACTIVE: ${banner.title}`);
+    console.log(`[Banner] ✓ Active: "${banner.title}" | Date: ${currentDate}, Time: ${currentTime}`);
     return true;
   }, []);
 
@@ -59,8 +58,9 @@ export function useBanners() {
 
       if (error) throw error;
 
+      // Filter banners based on schedule
       const activeBanners = (data || []).filter(isBannerCurrentlyActive);
-      console.log("[BannerSlider] Loaded banners:", activeBanners.length, "active out of", data?.length || 0);
+      console.log(`[BannerSlider] ${activeBanners.length} active out of ${data?.length || 0} banners`);
       setBanners(activeBanners);
     } catch (error) {
       console.error("[BannerSlider] Error fetching banners:", error);
@@ -95,6 +95,15 @@ export function useBanners() {
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [fetchBanners]);
+
+  // Periodic refresh to handle time-based visibility changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchBanners();
+    }, 60000); // Refresh every minute for time-based scheduling
+
+    return () => clearInterval(interval);
   }, [fetchBanners]);
 
   return { banners, loading };
