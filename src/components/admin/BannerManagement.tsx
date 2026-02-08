@@ -31,6 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus,
@@ -41,10 +42,15 @@ import {
   Image,
   ArrowUp,
   ArrowDown,
-  Eye,
   Smartphone,
   Check,
   X,
+  Clock,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  Info,
+  Power,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -82,7 +88,7 @@ interface BannerFormData {
 const defaultFormData: BannerFormData = {
   title: "",
   image_url: "",
-  is_active: false, // Default OFF for new banners
+  is_active: false,
   start_date: "",
   end_date: "",
   start_time: "",
@@ -95,7 +101,7 @@ const defaultFormData: BannerFormData = {
 
 const CLICK_ACTION_OPTIONS = [
   { value: "none", label: "No Action" },
-  { value: "product", label: "Open Product" },
+  { value: "product", label: "Open Product Detail" },
   { value: "category", label: "Open Category" },
   { value: "offers", label: "Open Offers Page" },
   { value: "services", label: "Open Services Page" },
@@ -116,7 +122,6 @@ export function BannerManagement() {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState<BannerFormData>(defaultFormData);
   const [submitting, setSubmitting] = useState(false);
@@ -152,7 +157,6 @@ export function BannerManagement() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type)) {
         toast({
@@ -226,7 +230,6 @@ export function BannerManagement() {
         if (error) throw error;
         toast({ title: "Banner updated successfully!" });
       } else {
-        // Get next display order
         const maxOrder = banners.length > 0 ? Math.max(...banners.map(b => b.display_order)) : 0;
         const { error } = await supabase
           .from("banners")
@@ -307,9 +310,9 @@ export function BannerManagement() {
       if (error) throw error;
       
       toast({
-        title: newStatus ? "Banner is now ON" : "Banner is now OFF",
+        title: newStatus ? "✓ Banner is now ON" : "Banner is now OFF",
         description: newStatus 
-          ? "Banner will be visible on Home Page" 
+          ? "Banner will be visible on Home Page (if within schedule)" 
           : "Banner is hidden from Home Page",
       });
       
@@ -324,28 +327,36 @@ export function BannerManagement() {
     }
   };
 
-  const getBannerVisibilityStatus = (banner: Banner): { visible: boolean; reason: string } => {
+  const getBannerVisibilityStatus = (banner: Banner): { visible: boolean; reason: string; type: 'success' | 'warning' | 'error' } => {
     if (!banner.is_active) {
-      return { visible: false, reason: "Banner is OFF" };
+      return { visible: false, reason: "Banner is OFF", type: 'error' };
     }
 
     const now = new Date();
-    const currentDate = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const currentDate = `${year}-${month}-${day}`;
+    
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes}`;
 
     if (banner.start_date && currentDate < banner.start_date) {
-      return { visible: false, reason: `Scheduled to start on ${banner.start_date}` };
+      return { visible: false, reason: `Starts: ${banner.start_date}`, type: 'warning' };
     }
     if (banner.end_date && currentDate > banner.end_date) {
-      return { visible: false, reason: `Ended on ${banner.end_date}` };
+      return { visible: false, reason: `Ended: ${banner.end_date}`, type: 'error' };
     }
     if (banner.start_time && banner.end_time) {
-      if (currentTime < banner.start_time || currentTime > banner.end_time) {
-        return { visible: false, reason: `Active only ${banner.start_time} - ${banner.end_time}` };
+      const startTime = banner.start_time.substring(0, 5);
+      const endTime = banner.end_time.substring(0, 5);
+      if (currentTime < startTime || currentTime > endTime) {
+        return { visible: false, reason: `Time: ${startTime}-${endTime}`, type: 'warning' };
       }
     }
 
-    return { visible: true, reason: "Visible on Home Page" };
+    return { visible: true, reason: "Live on Home Page", type: 'success' };
   };
 
   const handleMoveOrder = async (banner: Banner, direction: "up" | "down") => {
@@ -367,48 +378,27 @@ export function BannerManagement() {
     }
   };
 
-  const isBannerCurrentlyActive = (banner: Banner): boolean => {
-    if (!banner.is_active) return false;
-
-    const now = new Date();
-    const currentDate = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
-
-    if (banner.start_date && currentDate < banner.start_date) return false;
-    if (banner.end_date && currentDate > banner.end_date) return false;
-    if (banner.start_time && banner.end_time) {
-      if (currentTime < banner.start_time || currentTime > banner.end_time) return false;
-    }
-
-    return true;
-  };
-
   const getClickActionLabel = (type: string, value: string | null) => {
-    const option = CLICK_ACTION_OPTIONS.find(o => o.value === type);
     if (type === "none") return "No action";
     if (type === "product" && value) {
       const product = products.find(p => p.id === value);
-      return product ? `Product: ${product.name}` : "Product";
+      return product ? `→ ${product.name}` : "Product";
     }
-    if (type === "category" && value) return `Category: ${value}`;
-    if (type === "external" && value) return `Link: ${value}`;
+    if (type === "category" && value) return `→ ${value}`;
+    if (type === "external" && value) return `→ Link`;
+    const option = CLICK_ACTION_OPTIONS.find(o => o.value === type);
     return option?.label || type;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="font-display text-2xl font-bold">Banner Slider</h2>
           <p className="text-sm text-muted-foreground">
-            Manage homepage banners with premium Flipkart/Amazon style cards
+            Manage homepage banners with Flipkart/Amazon style design
           </p>
-          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
-            <Image className="h-4 w-4 text-primary" />
-            <span className="text-xs font-medium text-primary">
-              Recommended: 1080×420px (21:9 ratio) for best display
-            </span>
-          </div>
         </div>
         <Button onClick={() => setModalOpen(true)} className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
@@ -416,150 +406,200 @@ export function BannerManagement() {
         </Button>
       </div>
 
+      {/* Info Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+          <div className="flex items-start gap-3">
+            <Image className="h-5 w-5 text-primary mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-sm">Image Size</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                Recommended: <strong>1080 × 420 px</strong> (21:9 ratio)<br />
+                Images will auto-fit to banner frame
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 bg-muted/50 border border-border rounded-xl">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-sm">How Banners Work</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                <strong>ON</strong> = Banner visible on Home Page<br />
+                <strong>Schedule</strong> = Optional date/time restrictions
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : banners.length > 0 ? (
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden bg-card">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-muted/30">
                 <TableHead className="w-12">Order</TableHead>
-                <TableHead className="w-32">Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Click Action</TableHead>
-                <TableHead>Schedule</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-36">Preview</TableHead>
+                <TableHead>Details</TableHead>
+                <TableHead className="w-32">Status</TableHead>
+                <TableHead className="text-right w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {banners.map((banner, index) => (
-                <TableRow key={banner.id}>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => handleMoveOrder(banner, "up")}
-                        disabled={index === 0}
-                      >
-                        <ArrowUp className="h-3 w-3" />
-                      </Button>
-                      <span className="text-center text-xs">{banner.display_order}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => handleMoveOrder(banner, "down")}
-                        disabled={index === banners.length - 1}
-                      >
-                        <ArrowDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <img
-                      src={banner.image_url}
-                      alt={banner.title || "Banner"}
-                      className="w-28 h-12 object-cover rounded"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {banner.title || <span className="text-muted-foreground">No title</span>}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {getClickActionLabel(banner.click_action_type, banner.click_action_value)}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {banner.start_date || banner.end_date ? (
-                      <div>
-                        {banner.start_date && <div>From: {banner.start_date}</div>}
-                        {banner.end_date && <div>To: {banner.end_date}</div>}
+              {banners.map((banner, index) => {
+                const status = getBannerVisibilityStatus(banner);
+                return (
+                  <TableRow key={banner.id} className="group">
+                    {/* Order Controls */}
+                    <TableCell>
+                      <div className="flex flex-col items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleMoveOrder(banner, "up")}
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="h-3 w-3" />
+                        </Button>
+                        <span className="text-xs font-medium">{index + 1}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleMoveOrder(banner, "down")}
+                          disabled={index === banners.length - 1}
+                        >
+                          <ArrowDown className="h-3 w-3" />
+                        </Button>
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground">Always</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleActive(banner)}
-                              className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-200 cursor-pointer border-2",
-                                banner.is_active
-                                  ? "bg-cctv-success/20 text-cctv-success border-cctv-success/40 hover:bg-cctv-success/30"
-                                  : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-                              )}
-                            >
-                              {banner.is_active ? (
-                                <>
-                                  <Check className="h-4 w-4" />
-                                  <span>ON</span>
-                                </>
-                              ) : (
-                                <>
-                                  <X className="h-4 w-4" />
-                                  <span>OFF</span>
-                                </>
-                              )}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {banner.is_active
-                                ? "Banner will be visible on Home Page"
-                                : "Banner is hidden from Home Page"}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      {/* Visibility status indicator */}
-                      {(() => {
-                        const status = getBannerVisibilityStatus(banner);
-                        return (
-                          <span className={cn(
-                            "text-xs px-2 py-0.5 rounded",
-                            status.visible 
-                              ? "bg-cctv-success/10 text-cctv-success" 
-                              : "bg-destructive/10 text-destructive"
-                          )}>
-                            {status.visible ? "✓ Live" : `⚠ ${status.reason}`}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(banner)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(banner.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    
+                    {/* Image Preview */}
+                    <TableCell>
+                      <img
+                        src={banner.image_url}
+                        alt={banner.title || "Banner"}
+                        className="w-32 h-14 object-cover rounded-lg border border-border"
+                      />
+                    </TableCell>
+                    
+                    {/* Details */}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium text-sm">
+                          {banner.title || <span className="text-muted-foreground italic">No title</span>}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {getClickActionLabel(banner.click_action_type, banner.click_action_value)}
+                        </p>
+                        {(banner.start_date || banner.end_date) && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {banner.start_date && <span>{banner.start_date}</span>}
+                            {banner.start_date && banner.end_date && <span>→</span>}
+                            {banner.end_date && <span>{banner.end_date}</span>}
+                          </div>
+                        )}
+                        {banner.start_time && banner.end_time && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>{banner.start_time.slice(0, 5)} - {banner.end_time.slice(0, 5)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    
+                    {/* Status Toggle & Visibility */}
+                    <TableCell>
+                      <div className="space-y-2">
+                        {/* ON/OFF Toggle Button */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleActive(banner)}
+                                className={cn(
+                                  "flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold text-xs transition-all duration-200 cursor-pointer w-full justify-center",
+                                  banner.is_active
+                                    ? "bg-cctv-success/20 text-cctv-success border-2 border-cctv-success/40 hover:bg-cctv-success/30"
+                                    : "bg-muted text-muted-foreground border-2 border-border hover:bg-muted/80"
+                                )}
+                              >
+                                {banner.is_active ? (
+                                  <>
+                                    <Power className="h-3.5 w-3.5" />
+                                    <span>ON</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Power className="h-3.5 w-3.5" />
+                                    <span>OFF</span>
+                                  </>
+                                )}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Click to turn {banner.is_active ? "OFF" : "ON"}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {/* Visibility Status Badge */}
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] w-full justify-center",
+                            status.type === 'success' && "bg-cctv-success/10 text-cctv-success border-cctv-success/30",
+                            status.type === 'warning' && "bg-cctv-warning/10 text-cctv-warning border-cctv-warning/30",
+                            status.type === 'error' && "bg-destructive/10 text-destructive border-destructive/30"
+                          )}
+                        >
+                          {status.type === 'success' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                          {status.type === 'warning' && <Clock className="h-3 w-3 mr-1" />}
+                          {status.type === 'error' && <AlertCircle className="h-3 w-3 mr-1" />}
+                          {status.reason}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    
+                    {/* Actions */}
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(banner)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(banner.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       ) : (
-        <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
-          <Image className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No banners yet. Add your first banner!</p>
+        <div className="text-center py-16 text-muted-foreground border-2 border-dashed border-border rounded-xl bg-muted/20">
+          <Image className="h-16 w-16 mx-auto mb-4 opacity-30" />
+          <p className="font-medium">No banners yet</p>
+          <p className="text-sm mt-1">Add your first banner to display on the Home Page</p>
+          <Button onClick={() => setModalOpen(true)} className="mt-4">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Banner
+          </Button>
         </div>
       )}
 
@@ -567,7 +607,8 @@ export function BannerManagement() {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
               {editingBanner ? "Edit Banner" : "Add New Banner"}
             </DialogTitle>
           </DialogHeader>
@@ -582,7 +623,7 @@ export function BannerManagement() {
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g., Summer Sale"
+                    placeholder="e.g., Summer Sale 🔥"
                   />
                 </div>
 
@@ -590,14 +631,14 @@ export function BannerManagement() {
                   <Label htmlFor="image">
                     Banner Image <span className="text-destructive">*</span>
                   </Label>
-                  <div className="mt-1 p-4 border-2 border-dashed border-border rounded-lg bg-muted/30">
+                  <div className="mt-1 p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5">
                     <div className="text-center">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Recommended: <strong>1080 × 420 px</strong> (21:9 ratio)
+                      <Upload className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <p className="text-sm font-medium text-primary mb-1">
+                        1080 × 420 px (21:9)
                       </p>
                       <p className="text-xs text-muted-foreground mb-3">
-                        Formats: JPG, PNG, WEBP
+                        JPG, PNG, or WEBP • Auto-fit enabled
                       </p>
                       <Input
                         id="image"
@@ -630,7 +671,7 @@ export function BannerManagement() {
                 </div>
 
                 <div>
-                  <Label>Click Action</Label>
+                  <Label>Click Action (What happens when user clicks)</Label>
                   <Select
                     value={formData.click_action_type}
                     onValueChange={(value) => setFormData({ ...formData, click_action_type: value, click_action_value: "" })}
@@ -723,51 +764,76 @@ export function BannerManagement() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Start Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.start_date}
-                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                    />
+                {/* Schedule Section */}
+                <div className="p-4 bg-muted/50 rounded-xl space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Label className="font-semibold">Schedule (Optional)</Label>
                   </div>
-                  <div>
-                    <Label>End Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.end_date}
-                      onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to show banner always (when ON)
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Start Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.start_date}
+                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">End Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.end_date}
+                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Start Time</Label>
+                      <Input
+                        type="time"
+                        value={formData.start_time}
+                        onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">End Time</Label>
+                      <Input
+                        type="time"
+                        value={formData.end_time}
+                        onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Active Toggle */}
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
                   <div>
-                    <Label>Start Time</Label>
-                    <Input
-                      type="time"
-                      value={formData.start_time}
-                      onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                    <Label htmlFor="is_active" className="font-semibold">Banner Status</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formData.is_active ? "Banner will appear on Home Page" : "Banner is hidden"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "text-xs font-semibold px-2 py-1 rounded",
+                      formData.is_active ? "bg-cctv-success/20 text-cctv-success" : "bg-muted text-muted-foreground"
+                    )}>
+                      {formData.is_active ? "ON" : "OFF"}
+                    </span>
+                    <Switch
+                      id="is_active"
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                     />
                   </div>
-                  <div>
-                    <Label>End Time</Label>
-                    <Input
-                      type="time"
-                      value={formData.end_time}
-                      onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                  />
-                  <Label htmlFor="is_active">Banner Active</Label>
                 </div>
               </div>
 
@@ -775,40 +841,48 @@ export function BannerManagement() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Smartphone className="h-4 w-4" />
-                  <Label>Mobile Preview</Label>
+                  <Label className="font-semibold">Mobile Preview</Label>
                 </div>
-                <div className="bg-muted rounded-2xl p-2 max-w-[320px] mx-auto">
-                  <div className="bg-background rounded-xl overflow-hidden">
-                    <div className="h-6 bg-muted flex items-center justify-center">
-                      <div className="w-16 h-1 bg-muted-foreground/30 rounded-full" />
+                <div className="bg-muted rounded-3xl p-3 max-w-[320px] mx-auto shadow-xl">
+                  <div className="bg-background rounded-2xl overflow-hidden shadow-inner">
+                    {/* Phone notch */}
+                    <div className="h-6 bg-foreground/5 flex items-center justify-center">
+                      <div className="w-20 h-4 bg-foreground/10 rounded-full" />
                     </div>
-                    <div className="aspect-[21/9] bg-muted relative">
+                    {/* Banner preview */}
+                    <div className="aspect-[21/9] bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden rounded-lg m-2">
                       {imagePreview ? (
                         <img
                           src={imagePreview}
                           alt="Preview"
-                          className={`w-full h-full ${
-                            formData.image_fit_mode === "cover" 
-                              ? "object-cover" 
-                              : formData.image_fit_mode === "contain" 
-                              ? "object-contain" 
-                              : "object-fill"
-                          }`}
+                          className={cn(
+                            "w-full h-full",
+                            formData.image_fit_mode === "cover" && "object-cover",
+                            formData.image_fit_mode === "contain" && "object-contain",
+                            formData.image_fit_mode === "auto" && "object-cover"
+                          )}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Image className="h-8 w-8 text-muted-foreground/50" />
+                          <Image className="h-10 w-10 text-muted-foreground/30" />
                         </div>
                       )}
                     </div>
-                    <div className="p-3 space-y-2">
-                      <div className="h-4 bg-muted rounded w-3/4" />
-                      <div className="h-3 bg-muted rounded w-1/2" />
+                    {/* Dots indicator preview */}
+                    <div className="flex justify-center gap-1 py-2">
+                      <div className="w-4 h-1.5 bg-primary rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-primary/30 rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-primary/30 rounded-full" />
+                    </div>
+                    {/* Product grid preview */}
+                    <div className="p-3 grid grid-cols-2 gap-2">
+                      <div className="h-16 bg-muted rounded-lg" />
+                      <div className="h-16 bg-muted rounded-lg" />
                     </div>
                   </div>
                 </div>
                 <p className="text-xs text-center text-muted-foreground">
-                  This is how the banner will appear on mobile devices
+                  Banner appears between Search and Products
                 </p>
               </div>
             </div>

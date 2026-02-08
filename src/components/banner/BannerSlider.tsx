@@ -25,22 +25,22 @@ function getBannerContent(banner: {
     services: "🛠️ SERVICE",
     whatsapp: "💬 CONTACT US",
     external: "🔗 EXPLORE",
-    none: "",
+    none: "✨ SPECIAL",
   };
 
   const descriptions: Record<string, string> = {
-    product: "Check out this amazing product with great features",
-    category: "Browse our curated collection",
-    offers: "Limited time offer - Don't miss out!",
-    services: "Professional CCTV installation services",
+    product: "Discover this amazing product with premium features",
+    category: "Browse our curated collection of quality products",
+    offers: "Limited time offer - Don't miss out on savings!",
+    services: "Professional CCTV installation & maintenance",
     whatsapp: "Get instant quotation via WhatsApp",
-    external: "Discover more about our offerings",
-    none: "Explore our premium products",
+    external: "Explore more about our premium offerings",
+    none: "Explore our premium CCTV products",
   };
 
   const ctaTexts: Record<string, string> = {
     product: "View Product",
-    category: "Browse Collection",
+    category: "Browse Now",
     offers: "See Offers",
     services: "Book Service",
     whatsapp: "Chat Now",
@@ -49,8 +49,8 @@ function getBannerContent(banner: {
   };
 
   return {
-    badge: badges[banner.click_action_type] || "",
-    description: descriptions[banner.click_action_type] || "",
+    badge: badges[banner.click_action_type] || "✨ SPECIAL",
+    description: descriptions[banner.click_action_type] || "Explore our products",
     ctaText: ctaTexts[banner.click_action_type] || "View Details",
   };
 }
@@ -89,8 +89,8 @@ export function BannerSlider() {
   if (loading || banners.length === 0) return null;
 
   return (
-    <section className="w-full py-4 md:py-6 bg-gradient-to-b from-muted/30 to-background">
-      <div className="container px-4">
+    <section className="w-full py-4 md:py-6 bg-gradient-to-b from-background via-muted/20 to-background">
+      <div className="container px-3 md:px-4">
         <Carousel
           setApi={setApi}
           opts={{
@@ -119,15 +119,36 @@ export function BannerSlider() {
             })}
           </CarouselContent>
 
+          {/* Navigation arrows - Only show if multiple banners */}
           {banners.length > 1 && (
             <>
-              <CarouselPrevious className="left-2 md:left-6 h-8 w-8 md:h-10 md:w-10 opacity-80 hover:opacity-100 bg-background/80 backdrop-blur-sm border-border/50 shadow-lg" />
-              <CarouselNext className="right-2 md:right-6 h-8 w-8 md:h-10 md:w-10 opacity-80 hover:opacity-100 bg-background/80 backdrop-blur-sm border-border/50 shadow-lg" />
+              <CarouselPrevious 
+                className={cn(
+                  "left-1 md:left-4",
+                  "h-8 w-8 md:h-10 md:w-10",
+                  "bg-background/90 backdrop-blur-sm",
+                  "border-border/50 shadow-lg",
+                  "hover:bg-background hover:scale-105",
+                  "transition-all duration-200",
+                  "opacity-70 hover:opacity-100"
+                )} 
+              />
+              <CarouselNext 
+                className={cn(
+                  "right-1 md:right-4",
+                  "h-8 w-8 md:h-10 md:w-10",
+                  "bg-background/90 backdrop-blur-sm",
+                  "border-border/50 shadow-lg",
+                  "hover:bg-background hover:scale-105",
+                  "transition-all duration-200",
+                  "opacity-70 hover:opacity-100"
+                )} 
+              />
             </>
           )}
         </Carousel>
 
-        {/* Dot Indicators */}
+        {/* Dot Indicators - Premium style */}
         {banners.length > 1 && (
           <div className="flex justify-center gap-2 mt-4">
             {banners.map((_, index) => (
@@ -135,10 +156,11 @@ export function BannerSlider() {
                 key={index}
                 onClick={() => api?.scrollTo(index)}
                 className={cn(
-                  "h-2 rounded-full transition-all duration-300",
+                  "rounded-full transition-all duration-300 ease-out",
+                  "focus:outline-none focus:ring-2 focus:ring-primary/50",
                   current === index
-                    ? "bg-primary w-8"
-                    : "bg-primary/30 hover:bg-primary/50 w-2"
+                    ? "bg-primary w-8 h-2.5 shadow-md shadow-primary/30"
+                    : "bg-primary/30 hover:bg-primary/50 w-2.5 h-2.5 hover:scale-110"
                 )}
                 aria-label={`Go to slide ${index + 1}`}
               />
