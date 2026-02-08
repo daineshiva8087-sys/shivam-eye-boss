@@ -8,7 +8,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Percent } from "lucide-react";
+import { OfferDetailModal } from "./OfferDetailModal";
 
 interface Offer {
   id: string;
@@ -18,15 +19,41 @@ interface Offer {
   highlight_text: string | null;
   is_active: boolean;
   display_order: number;
+  promo_code: string | null;
+  discount_type: string | null;
+  discount_value: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
 }
 
 export function OfferBanner() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     fetchOffers();
   }, []);
+
+  const isOfferCurrentlyActive = (offer: Offer): boolean => {
+    if (!offer.is_active) return false;
+
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+
+    if (offer.start_date && currentDate < offer.start_date) return false;
+    if (offer.end_date && currentDate > offer.end_date) return false;
+
+    if (offer.start_time && offer.end_time) {
+      if (currentTime < offer.start_time || currentTime > offer.end_time) return false;
+    }
+
+    return true;
+  };
 
   const fetchOffers = async () => {
     try {
@@ -37,7 +64,10 @@ export function OfferBanner() {
         .order("display_order", { ascending: true });
 
       if (error) throw error;
-      setOffers(data || []);
+      
+      // Filter offers that are currently active based on date/time
+      const activeOffers = (data || []).filter(isOfferCurrentlyActive);
+      setOffers(activeOffers);
     } catch (error) {
       console.error("Error fetching offers:", error);
     } finally {
@@ -45,56 +75,93 @@ export function OfferBanner() {
     }
   };
 
+  const handleOfferClick = (offer: Offer) => {
+    setSelectedOffer(offer);
+    setModalOpen(true);
+  };
+
   if (loading || offers.length === 0) return null;
 
   return (
-    <section className="py-4 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
-      <div className="container">
-        <Carousel
-          opts={{ loop: true }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {offers.map((offer) => (
-              <CarouselItem key={offer.id}>
-                <div className="relative flex flex-col md:flex-row items-center gap-4 p-6 rounded-xl bg-card border border-primary/20 overflow-hidden">
-                  {offer.banner_image_url && (
-                    <div className="w-full md:w-1/3 aspect-video md:aspect-square max-h-40 rounded-lg overflow-hidden">
-                      <img
-                        src={offer.banner_image_url}
-                        alt={offer.title}
-                        className="w-full h-full object-cover"
-                      />
+    <>
+      <section className="py-4 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
+        <div className="container">
+          <Carousel
+            opts={{ loop: true }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {offers.map((offer) => {
+                const discountText = offer.discount_type === 'percentage'
+                  ? `${offer.discount_value}% OFF`
+                  : offer.discount_value
+                  ? `₹${offer.discount_value} OFF`
+                  : null;
+
+                return (
+                  <CarouselItem key={offer.id}>
+                    <div 
+                      className="relative flex flex-col md:flex-row items-center gap-4 p-6 rounded-xl bg-card border border-primary/20 overflow-hidden cursor-pointer hover:border-primary/40 transition-colors"
+                      onClick={() => handleOfferClick(offer)}
+                    >
+                      {offer.banner_image_url && (
+                        <div className="w-full md:w-1/3 aspect-video md:aspect-square max-h-40 rounded-lg overflow-hidden">
+                          <img
+                            src={offer.banner_image_url}
+                            alt={offer.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 text-center md:text-left">
+                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-2">
+                          {offer.highlight_text && (
+                            <Badge className="bg-primary text-primary-foreground">
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              {offer.highlight_text}
+                            </Badge>
+                          )}
+                          {discountText && (
+                            <Badge variant="secondary" className="bg-cctv-success/20 text-cctv-success">
+                              <Percent className="h-3 w-3 mr-1" />
+                              {discountText}
+                            </Badge>
+                          )}
+                        </div>
+                        <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2">
+                          {offer.title}
+                        </h3>
+                        {offer.description && (
+                          <p className="text-muted-foreground text-sm md:text-base">
+                            {offer.description}
+                          </p>
+                        )}
+                        {offer.promo_code && (
+                          <p className="text-xs text-primary mt-2">
+                            Click for promo code
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-1 text-center md:text-left">
-                    {offer.highlight_text && (
-                      <Badge className="mb-2 bg-primary text-primary-foreground">
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        {offer.highlight_text}
-                      </Badge>
-                    )}
-                    <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2">
-                      {offer.title}
-                    </h3>
-                    {offer.description && (
-                      <p className="text-muted-foreground text-sm md:text-base">
-                        {offer.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          {offers.length > 1 && (
-            <>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </>
-          )}
-        </Carousel>
-      </div>
-    </section>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            {offers.length > 1 && (
+              <>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </>
+            )}
+          </Carousel>
+        </div>
+      </section>
+
+      <OfferDetailModal
+        offer={selectedOffer}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
+    </>
   );
 }
