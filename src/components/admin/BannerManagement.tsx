@@ -43,16 +43,23 @@ import {
   ArrowUp,
   ArrowDown,
   Smartphone,
-  Check,
-  X,
   Clock,
   Calendar,
   AlertCircle,
   CheckCircle2,
   Info,
   Power,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  getISTTimeString12,
+  getISTDateString,
+  formatISTDate,
+  formatTime12Hour,
+  getBannerStatus,
+  type BannerStatus,
+} from "@/lib/timezone";
 
 interface Banner {
   id: string;
@@ -128,6 +135,17 @@ export function BannerManagement() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [currentTime, setCurrentTime] = useState(getISTTimeString12());
+  const [currentDate, setCurrentDate] = useState(getISTDateString());
+
+  // Update current time every second for live display
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(getISTTimeString12());
+      setCurrentDate(getISTDateString());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -327,36 +345,39 @@ export function BannerManagement() {
     }
   };
 
-  const getBannerVisibilityStatus = (banner: Banner): { visible: boolean; reason: string; type: 'success' | 'warning' | 'error' } => {
-    if (!banner.is_active) {
-      return { visible: false, reason: "Banner is OFF", type: 'error' };
-    }
+  const getBannerVisibilityStatus = (banner: Banner): { 
+    visible: boolean; 
+    reason: string; 
+    type: 'success' | 'warning' | 'error';
+    countdown?: string;
+  } => {
+    const status = getBannerStatus(
+      banner.is_active,
+      banner.start_date,
+      banner.end_date,
+      banner.start_time,
+      banner.end_time
+    );
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const currentDate = `${year}-${month}-${day}`;
-    
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const currentTime = `${hours}:${minutes}`;
-
-    if (banner.start_date && currentDate < banner.start_date) {
-      return { visible: false, reason: `Starts: ${banner.start_date}`, type: 'warning' };
+    if (status.status === 'off') {
+      return { visible: false, reason: status.message, type: 'error' };
     }
-    if (banner.end_date && currentDate > banner.end_date) {
-      return { visible: false, reason: `Ended: ${banner.end_date}`, type: 'error' };
+    if (status.status === 'expired') {
+      return { visible: false, reason: status.message, type: 'error' };
     }
-    if (banner.start_time && banner.end_time) {
-      const startTime = banner.start_time.substring(0, 5);
-      const endTime = banner.end_time.substring(0, 5);
-      if (currentTime < startTime || currentTime > endTime) {
-        return { visible: false, reason: `Time: ${startTime}-${endTime}`, type: 'warning' };
-      }
+    if (status.status === 'scheduled' || status.status === 'upcoming') {
+      return { 
+        visible: false, 
+        reason: status.message, 
+        type: 'warning',
+        countdown: status.status === 'upcoming' ? `${status.minutesUntil}m` : undefined
+      };
     }
-
-    return { visible: true, reason: "Live on Home Page", type: 'success' };
+    return { 
+      visible: true, 
+      reason: status.message + (status.endTime ? ` (until ${status.endTime})` : ''), 
+      type: 'success' 
+    };
   };
 
   const handleMoveOrder = async (banner: Banner, direction: "up" | "down") => {
@@ -406,16 +427,40 @@ export function BannerManagement() {
         </Button>
       </div>
 
+      {/* Live IST Time Indicator */}
+      <div className="p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary animate-pulse" />
+              <div>
+                <span className="text-2xl font-bold font-mono text-foreground">{currentTime}</span>
+                <span className="ml-2 text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">IST</span>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-border hidden md:block" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span className="text-sm font-medium">{formatISTDate(currentDate)}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4" />
+            <span className="text-sm">Jalna, Maharashtra</span>
+          </div>
+        </div>
+      </div>
+
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
           <div className="flex items-start gap-3">
             <Image className="h-5 w-5 text-primary mt-0.5" />
             <div>
               <h4 className="font-semibold text-sm">Image Size</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                Recommended: <strong>1080 × 420 px</strong> (21:9 ratio)<br />
-                Images will auto-fit to banner frame
+                Recommended: <strong>1080 × 420 px</strong> (21:9)<br />
+                Images auto-fit to banner
               </p>
             </div>
           </div>
@@ -426,8 +471,20 @@ export function BannerManagement() {
             <div>
               <h4 className="font-semibold text-sm">How Banners Work</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                <strong>ON</strong> = Banner visible on Home Page<br />
-                <strong>Schedule</strong> = Optional date/time restrictions
+                <strong>ON</strong> = Visible on Home Page<br />
+                <strong>Schedule</strong> = Date/time restrictions
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 bg-muted/50 border border-border rounded-xl">
+          <div className="flex items-start gap-3">
+            <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-sm">Time Format</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                All times use <strong>12-hour AM/PM</strong><br />
+                Timezone: Asia/Kolkata (IST)
               </p>
             </div>
           </div>
@@ -501,15 +558,19 @@ export function BannerManagement() {
                         {(banner.start_date || banner.end_date) && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            {banner.start_date && <span>{banner.start_date}</span>}
+                            {banner.start_date && <span>{formatISTDate(banner.start_date)}</span>}
                             {banner.start_date && banner.end_date && <span>→</span>}
-                            {banner.end_date && <span>{banner.end_date}</span>}
+                            {banner.end_date && <span>{formatISTDate(banner.end_date)}</span>}
                           </div>
                         )}
-                        {banner.start_time && banner.end_time && (
+                        {(banner.start_time || banner.end_time) && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            <span>{banner.start_time.slice(0, 5)} - {banner.end_time.slice(0, 5)}</span>
+                            <span>
+                              {banner.start_time && formatTime12Hour(banner.start_time)}
+                              {banner.start_time && banner.end_time && ' - '}
+                              {banner.end_time && formatTime12Hour(banner.end_time)}
+                            </span>
                           </div>
                         )}
                       </div>
