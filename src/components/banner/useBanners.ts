@@ -8,36 +8,44 @@ export function useBanners() {
 
   const isBannerCurrentlyActive = useCallback((banner: Banner): boolean => {
     if (!banner.is_active) {
-      console.log(`[Banner ${banner.id}] Inactive: is_active=false`);
       return false;
     }
 
     const now = new Date();
-    const currentDate = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+    
+    // Use LOCAL date and time consistently (not UTC)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const currentDate = `${year}-${month}-${day}`;
+    
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes}`;
 
-    console.log(`[Banner ${banner.id}] Checking: currentDate=${currentDate}, currentTime=${currentTime}`);
-    console.log(`[Banner ${banner.id}] Schedule: start_date=${banner.start_date}, end_date=${banner.end_date}, start_time=${banner.start_time}, end_time=${banner.end_time}`);
+    console.log(`[Banner] Date: ${currentDate}, Time: ${currentTime}`);
 
     // Check date range - if dates are set, enforce them
     if (banner.start_date && currentDate < banner.start_date) {
-      console.log(`[Banner ${banner.id}] Inactive: before start_date`);
+      console.log(`[Banner] Inactive: before start_date (${banner.start_date})`);
       return false;
     }
     if (banner.end_date && currentDate > banner.end_date) {
-      console.log(`[Banner ${banner.id}] Inactive: after end_date`);
+      console.log(`[Banner] Inactive: after end_date (${banner.end_date})`);
       return false;
     }
     
     // Check time range only if BOTH are set
     if (banner.start_time && banner.end_time) {
-      if (currentTime < banner.start_time || currentTime > banner.end_time) {
-        console.log(`[Banner ${banner.id}] Inactive: outside time window`);
+      const startTime = banner.start_time.substring(0, 5);
+      const endTime = banner.end_time.substring(0, 5);
+      if (currentTime < startTime || currentTime > endTime) {
+        console.log(`[Banner] Inactive: outside time window (${startTime}-${endTime})`);
         return false;
       }
     }
 
-    console.log(`[Banner ${banner.id}] ACTIVE`);
+    console.log(`[Banner] ACTIVE: ${banner.title}`);
     return true;
   }, []);
 
