@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Carousel,
@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Percent } from "lucide-react";
 import { OfferDetailModal } from "./OfferDetailModal";
+import { isBannerVisible } from "@/lib/timezone";
 
 interface Offer {
   id: string;
@@ -34,28 +35,18 @@ export function OfferBanner() {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchOffers();
+  const isOfferCurrentlyActive = useCallback((offer: Offer): boolean => {
+    // Use IST timezone utility for consistent behavior
+    return isBannerVisible(
+      offer.is_active,
+      offer.start_date,
+      offer.end_date,
+      offer.start_time,
+      offer.end_time
+    );
   }, []);
 
-  const isOfferCurrentlyActive = (offer: Offer): boolean => {
-    if (!offer.is_active) return false;
-
-    const now = new Date();
-    const currentDate = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
-
-    if (offer.start_date && currentDate < offer.start_date) return false;
-    if (offer.end_date && currentDate > offer.end_date) return false;
-
-    if (offer.start_time && offer.end_time) {
-      if (currentTime < offer.start_time || currentTime > offer.end_time) return false;
-    }
-
-    return true;
-  };
-
-  const fetchOffers = async () => {
+  const fetchOffers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("offers")
@@ -65,7 +56,7 @@ export function OfferBanner() {
 
       if (error) throw error;
       
-      // Filter offers that are currently active based on date/time
+      // Filter offers that are currently active based on IST date/time
       const activeOffers = (data || []).filter(isOfferCurrentlyActive);
       setOffers(activeOffers);
     } catch (error) {
@@ -73,7 +64,17 @@ export function OfferBanner() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isOfferCurrentlyActive]);
+
+  useEffect(() => {
+    fetchOffers();
+  }, [fetchOffers]);
+
+  // Periodic refresh for time-based visibility
+  useEffect(() => {
+    const interval = setInterval(fetchOffers, 60000);
+    return () => clearInterval(interval);
+  }, [fetchOffers]);
 
   const handleOfferClick = (offer: Offer) => {
     setSelectedOffer(offer);
