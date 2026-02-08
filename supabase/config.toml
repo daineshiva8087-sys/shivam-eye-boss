@@ -1,1 +1,4 @@
 project_id = "venoqdnslspxfkrwmqrn"
+
+[functions.analyze-product-image]
+verify_jwt = false

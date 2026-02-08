@@ -3,7 +3,6 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -42,7 +41,6 @@ import {
   Image,
   ArrowUp,
   ArrowDown,
-  Smartphone,
   Clock,
   Calendar,
   AlertCircle,
@@ -50,6 +48,7 @@ import {
   Info,
   Power,
   MapPin,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -58,8 +57,10 @@ import {
   formatISTDate,
   formatTime12Hour,
   getBannerStatus,
-  type BannerStatus,
 } from "@/lib/timezone";
+import { BannerTypeSelector } from "./banner/BannerTypeSelector";
+import { AIBannerCreator } from "./banner/AIBannerCreator";
+import { ManualBannerCreator } from "./banner/ManualBannerCreator";
 
 interface Banner {
   id: string;
@@ -122,13 +123,15 @@ const IMAGE_FIT_OPTIONS = [
   { value: "contain", label: "Contain (no crop)" },
 ];
 
+type ModalMode = "closed" | "type-select" | "ai-create" | "manual-create" | "edit";
+
 export function BannerManagement() {
   const { toast } = useToast();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>("closed");
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState<BannerFormData>(defaultFormData);
   const [submitting, setSubmitting] = useState(false);
@@ -208,6 +211,71 @@ export function BannerManagement() {
     return data.publicUrl;
   };
 
+  // Handler for AI Banner creation
+  const handleAIBannerCreated = async (bannerData: {
+    title: string;
+    image_url: string;
+    is_ai_generated: boolean;
+    ai_analysis: any;
+  }) => {
+    try {
+      const maxOrder = banners.length > 0 ? Math.max(...banners.map(b => b.display_order)) : 0;
+      const { error } = await supabase.from("banners").insert({
+        title: bannerData.title,
+        image_url: bannerData.image_url,
+        is_active: false, // Start as OFF
+        display_order: maxOrder + 1,
+        click_action_type: "product",
+        image_fit_mode: "contain", // AI banners use contain to show full product
+      });
+
+      if (error) throw error;
+      
+      setModalMode("closed");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error creating AI banner:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create banner",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handler for Manual Banner creation
+  const handleManualBannerCreated = async (bannerData: {
+    title: string;
+    image_url: string;
+    click_action_type: string;
+    click_action_value: string;
+  }) => {
+    try {
+      const maxOrder = banners.length > 0 ? Math.max(...banners.map(b => b.display_order)) : 0;
+      const { error } = await supabase.from("banners").insert({
+        title: bannerData.title,
+        image_url: bannerData.image_url,
+        is_active: false, // Start as OFF
+        display_order: maxOrder + 1,
+        click_action_type: bannerData.click_action_type,
+        click_action_value: bannerData.click_action_value || null,
+        image_fit_mode: "cover", // Manual banners use cover to fill space
+      });
+
+      if (error) throw error;
+      
+      setModalMode("closed");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error creating manual banner:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create banner",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -247,14 +315,6 @@ export function BannerManagement() {
 
         if (error) throw error;
         toast({ title: "Banner updated successfully!" });
-      } else {
-        const maxOrder = banners.length > 0 ? Math.max(...banners.map(b => b.display_order)) : 0;
-        const { error } = await supabase
-          .from("banners")
-          .insert({ ...bannerData, display_order: maxOrder + 1 });
-
-        if (error) throw error;
-        toast({ title: "Banner added successfully!" });
       }
 
       resetForm();
@@ -273,7 +333,7 @@ export function BannerManagement() {
   };
 
   const resetForm = () => {
-    setModalOpen(false);
+    setModalMode("closed");
     setFormData(defaultFormData);
     setEditingBanner(null);
     setImageFile(null);
@@ -296,7 +356,7 @@ export function BannerManagement() {
       auto_slide_interval: banner.auto_slide_interval.toString(),
     });
     setImagePreview(banner.image_url);
-    setModalOpen(true);
+    setModalMode("edit");
   };
 
   const handleDelete = async (id: string) => {
@@ -418,12 +478,15 @@ export function BannerManagement() {
         <div>
           <h2 className="font-display text-2xl font-bold">Banner Slider</h2>
           <p className="text-sm text-muted-foreground">
-            Manage homepage banners with Flipkart/Amazon style design
+            Manage homepage banners with AI-powered or custom designs
           </p>
         </div>
-        <Button onClick={() => setModalOpen(true)} className="bg-primary hover:bg-primary/90">
+        <Button 
+          onClick={() => setModalMode("type-select")} 
+          className="bg-primary hover:bg-primary/90"
+        >
           <Plus className="h-4 w-4 mr-2" />
-          Add Banner
+          Add New Banner
         </Button>
       </div>
 
@@ -453,14 +516,24 @@ export function BannerManagement() {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+        <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl">
           <div className="flex items-start gap-3">
-            <Image className="h-5 w-5 text-primary mt-0.5" />
+            <Sparkles className="h-5 w-5 text-primary mt-0.5" />
             <div>
-              <h4 className="font-semibold text-sm">Image Size</h4>
+              <h4 className="font-semibold text-sm">AI Banner</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                Recommended: <strong>1080 × 420 px</strong> (21:9)<br />
-                Images auto-fit to banner
+                Upload product photo, AI creates the design automatically
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 bg-muted/50 border border-border rounded-xl">
+          <div className="flex items-start gap-3">
+            <Image className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-sm">Manual Banner</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                Upload pre-designed banner, displays exactly as-is
               </p>
             </div>
           </div>
@@ -469,22 +542,9 @@ export function BannerManagement() {
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div>
-              <h4 className="font-semibold text-sm">How Banners Work</h4>
+              <h4 className="font-semibold text-sm">Recommended Size</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                <strong>ON</strong> = Visible on Home Page<br />
-                <strong>Schedule</strong> = Date/time restrictions
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="p-4 bg-muted/50 border border-border rounded-xl">
-          <div className="flex items-start gap-3">
-            <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-sm">Time Format</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                All times use <strong>12-hour AM/PM</strong><br />
-                Timezone: Asia/Kolkata (IST)
+                <strong>1080 × 420 px</strong> (21:9 ratio)
               </p>
             </div>
           </div>
@@ -657,307 +717,324 @@ export function BannerManagement() {
           <Image className="h-16 w-16 mx-auto mb-4 opacity-30" />
           <p className="font-medium">No banners yet</p>
           <p className="text-sm mt-1">Add your first banner to display on the Home Page</p>
-          <Button onClick={() => setModalOpen(true)} className="mt-4">
+          <Button onClick={() => setModalMode("type-select")} className="mt-4">
             <Plus className="h-4 w-4 mr-2" />
             Add Banner
           </Button>
         </div>
       )}
 
-      {/* Banner Form Modal */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
-              {editingBanner ? "Edit Banner" : "Add New Banner"}
-            </DialogTitle>
-          </DialogHeader>
+      {/* Modal for Banner Creation/Editing */}
+      <Dialog 
+        open={modalMode !== "closed"} 
+        onOpenChange={(open) => !open && resetForm()}
+      >
+        <DialogContent className={cn(
+          "max-h-[90vh] overflow-y-auto",
+          modalMode === "type-select" && "max-w-2xl",
+          (modalMode === "ai-create" || modalMode === "manual-create") && "max-w-4xl",
+          modalMode === "edit" && "max-w-4xl"
+        )}>
+          {modalMode === "type-select" && (
+            <BannerTypeSelector
+              onSelectAI={() => setModalMode("ai-create")}
+              onSelectManual={() => setModalMode("manual-create")}
+              onCancel={resetForm}
+            />
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column - Form Fields */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Banner Title (Optional)</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g., Summer Sale 🔥"
-                  />
-                </div>
+          {modalMode === "ai-create" && (
+            <AIBannerCreator
+              onBannerCreated={handleAIBannerCreated}
+              onCancel={resetForm}
+            />
+          )}
 
-                <div>
-                  <Label htmlFor="image">
-                    Banner Image <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="mt-1 p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5">
-                    <div className="text-center">
-                      <Upload className="h-8 w-8 mx-auto text-primary mb-2" />
-                      <p className="text-sm font-medium text-primary mb-1">
-                        1080 × 420 px (21:9)
+          {modalMode === "manual-create" && (
+            <ManualBannerCreator
+              products={products}
+              categories={categories}
+              onBannerCreated={handleManualBannerCreated}
+              onCancel={resetForm}
+            />
+          )}
+
+          {modalMode === "edit" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Edit Banner
+                </DialogTitle>
+              </DialogHeader>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column - Form Fields */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Banner Title (Optional)</Label>
+                      <Input
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        placeholder="e.g., Summer Sale 🔥"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="image">
+                        Banner Image <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="mt-1 p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5">
+                        <div className="text-center">
+                          <Upload className="h-8 w-8 mx-auto text-primary mb-2" />
+                          <p className="text-sm font-medium text-primary mb-1">
+                            1080 × 420 px (21:9)
+                          </p>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            JPG, PNG, or WEBP • Auto-fit enabled
+                          </p>
+                          <Input
+                            id="image"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={handleImageChange}
+                            className="max-w-xs mx-auto"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Image Fit Mode</Label>
+                      <Select
+                        value={formData.image_fit_mode}
+                        onValueChange={(value) => setFormData({ ...formData, image_fit_mode: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {IMAGE_FIT_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Click Action</Label>
+                      <Select
+                        value={formData.click_action_type}
+                        onValueChange={(value) => setFormData({ ...formData, click_action_type: value, click_action_value: "" })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CLICK_ACTION_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {formData.click_action_type === "product" && (
+                      <div>
+                        <Label>Select Product</Label>
+                        <Select
+                          value={formData.click_action_value}
+                          onValueChange={(value) => setFormData({ ...formData, click_action_value: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a product" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {products.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {formData.click_action_type === "category" && (
+                      <div>
+                        <Label>Select Category</Label>
+                        <Select
+                          value={formData.click_action_value}
+                          onValueChange={(value) => setFormData({ ...formData, click_action_value: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat} value={cat}>
+                                {cat}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {formData.click_action_type === "external" && (
+                      <div>
+                        <Label>External URL</Label>
+                        <Input
+                          value={formData.click_action_value}
+                          onChange={(e) => setFormData({ ...formData, click_action_value: e.target.value })}
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                    )}
+
+                    {formData.click_action_type === "whatsapp" && (
+                      <div>
+                        <Label>WhatsApp Message (Optional)</Label>
+                        <Input
+                          value={formData.click_action_value}
+                          onChange={(e) => setFormData({ ...formData, click_action_value: e.target.value })}
+                          placeholder="Hi, I'm interested in your products"
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <Label>Auto-Slide Interval (seconds)</Label>
+                      <Input
+                        type="number"
+                        min="2"
+                        max="30"
+                        value={formData.auto_slide_interval}
+                        onChange={(e) => setFormData({ ...formData, auto_slide_interval: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Schedule Section */}
+                    <div className="p-4 bg-muted/50 rounded-xl space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <Label className="font-semibold">Schedule (Optional)</Label>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Leave empty to show banner always (when ON)
                       </p>
-                      <p className="text-xs text-muted-foreground mb-3">
-                        JPG, PNG, or WEBP • Auto-fit enabled
-                      </p>
-                      <Input
-                        id="image"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={handleImageChange}
-                        className="max-w-xs mx-auto"
-                      />
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">Start Date</Label>
+                          <Input
+                            type="date"
+                            value={formData.start_date}
+                            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">End Date</Label>
+                          <Input
+                            type="date"
+                            value={formData.end_date}
+                            onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">Start Time</Label>
+                          <Input
+                            type="time"
+                            value={formData.start_time}
+                            onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">End Time</Label>
+                          <Input
+                            type="time"
+                            value={formData.end_time}
+                            onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div>
-                  <Label>Image Fit Mode</Label>
-                  <Select
-                    value={formData.image_fit_mode}
-                    onValueChange={(value) => setFormData({ ...formData, image_fit_mode: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {IMAGE_FIT_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Click Action (What happens when user clicks)</Label>
-                  <Select
-                    value={formData.click_action_type}
-                    onValueChange={(value) => setFormData({ ...formData, click_action_type: value, click_action_value: "" })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CLICK_ACTION_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.click_action_type === "product" && (
-                  <div>
-                    <Label>Select Product</Label>
-                    <Select
-                      value={formData.click_action_value}
-                      onValueChange={(value) => setFormData({ ...formData, click_action_value: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a product" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {formData.click_action_type === "category" && (
-                  <div>
-                    <Label>Select Category</Label>
-                    <Select
-                      value={formData.click_action_value}
-                      onValueChange={(value) => setFormData({ ...formData, click_action_value: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {formData.click_action_type === "external" && (
-                  <div>
-                    <Label>External URL</Label>
-                    <Input
-                      value={formData.click_action_value}
-                      onChange={(e) => setFormData({ ...formData, click_action_value: e.target.value })}
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                )}
-
-                {formData.click_action_type === "whatsapp" && (
-                  <div>
-                    <Label>WhatsApp Message (Optional)</Label>
-                    <Input
-                      value={formData.click_action_value}
-                      onChange={(e) => setFormData({ ...formData, click_action_value: e.target.value })}
-                      placeholder="Hi, I'm interested in your products"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label>Auto-Slide Interval (seconds)</Label>
-                  <Input
-                    type="number"
-                    min="2"
-                    max="30"
-                    value={formData.auto_slide_interval}
-                    onChange={(e) => setFormData({ ...formData, auto_slide_interval: e.target.value })}
-                  />
-                </div>
-
-                {/* Schedule Section */}
-                <div className="p-4 bg-muted/50 rounded-xl space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <Label className="font-semibold">Schedule (Optional)</Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Leave empty to show banner always (when ON)
-                  </p>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs">Start Date</Label>
-                      <Input
-                        type="date"
-                        value={formData.start_date}
-                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">End Date</Label>
-                      <Input
-                        type="date"
-                        value={formData.end_date}
-                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                      />
+                    {/* Active Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                      <div>
+                        <Label htmlFor="is_active" className="font-semibold">Banner Status</Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {formData.is_active ? "Banner will appear on Home Page" : "Banner is hidden"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, is_active: !formData.is_active })}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200",
+                          formData.is_active
+                            ? "bg-cctv-success text-white"
+                            : "bg-muted text-muted-foreground border border-border"
+                        )}
+                      >
+                        <Power className="h-4 w-4" />
+                        {formData.is_active ? "ON" : "OFF"}
+                      </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs">Start Time</Label>
-                      <Input
-                        type="time"
-                        value={formData.start_time}
-                        onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">End Time</Label>
-                      <Input
-                        type="time"
-                        value={formData.end_time}
-                        onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Active Toggle */}
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
-                  <div>
-                    <Label htmlFor="is_active" className="font-semibold">Banner Status</Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {formData.is_active ? "Banner will appear on Home Page" : "Banner is hidden"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "text-xs font-semibold px-2 py-1 rounded",
-                      formData.is_active ? "bg-cctv-success/20 text-cctv-success" : "bg-muted text-muted-foreground"
-                    )}>
-                      {formData.is_active ? "ON" : "OFF"}
-                    </span>
-                    <Switch
-                      id="is_active"
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Mobile Preview */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="h-4 w-4" />
-                  <Label className="font-semibold">Mobile Preview</Label>
-                </div>
-                <div className="bg-muted rounded-3xl p-3 max-w-[320px] mx-auto shadow-xl">
-                  <div className="bg-background rounded-2xl overflow-hidden shadow-inner">
-                    {/* Phone notch */}
-                    <div className="h-6 bg-foreground/5 flex items-center justify-center">
-                      <div className="w-20 h-4 bg-foreground/10 rounded-full" />
-                    </div>
-                    {/* Banner preview */}
-                    <div className="aspect-[21/9] bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden rounded-lg m-2">
+                  {/* Right Column - Preview */}
+                  <div className="space-y-4">
+                    <Label className="font-semibold">Preview</Label>
+                    <div className="aspect-[21/9] rounded-xl overflow-hidden border border-border bg-muted/50">
                       {imagePreview ? (
                         <img
                           src={imagePreview}
                           alt="Preview"
-                          className={cn(
-                            "w-full h-full",
-                            formData.image_fit_mode === "cover" && "object-cover",
-                            formData.image_fit_mode === "contain" && "object-contain",
-                            formData.image_fit_mode === "auto" && "object-cover"
-                          )}
+                          className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Image className="h-10 w-10 text-muted-foreground/30" />
+                        <div className="h-full flex items-center justify-center">
+                          <div className="text-center">
+                            <Image className="h-12 w-12 mx-auto text-muted-foreground/30 mb-2" />
+                            <p className="text-sm text-muted-foreground">
+                              No image uploaded
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
-                    {/* Dots indicator preview */}
-                    <div className="flex justify-center gap-1 py-2">
-                      <div className="w-4 h-1.5 bg-primary rounded-full" />
-                      <div className="w-1.5 h-1.5 bg-primary/30 rounded-full" />
-                      <div className="w-1.5 h-1.5 bg-primary/30 rounded-full" />
-                    </div>
-                    {/* Product grid preview */}
-                    <div className="p-3 grid grid-cols-2 gap-2">
-                      <div className="h-16 bg-muted rounded-lg" />
-                      <div className="h-16 bg-muted rounded-lg" />
-                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-center text-muted-foreground">
-                  Banner appears between Search and Products
-                </p>
-              </div>
-            </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={submitting || uploadingImage}>
-                {(submitting || uploadingImage) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {editingBanner ? "Update Banner" : "Add Banner"}
-              </Button>
-            </div>
-          </form>
+                {/* Form Actions */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={submitting} className="bg-primary hover:bg-primary/90">
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {uploadingImage ? "Uploading..." : "Saving..."}
+                      </>
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
