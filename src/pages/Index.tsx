@@ -14,6 +14,7 @@ import { ComboSection } from "@/components/ComboSection";
 import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { AboutSection } from "@/components/AboutSection";
+import { BannerSlider } from "@/components/BannerSlider";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2, Camera, Wrench, Shield, CheckCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,17 @@ const Index = () => {
 
   useEffect(() => {
     fetchProducts();
+
+    // Listen for category selection from banner clicks
+    const handleCategorySelect = (e: CustomEvent<{ category: string }>) => {
+      setSelectedCategory(e.detail.category);
+      setSearchQuery("");
+    };
+
+    window.addEventListener("selectCategory", handleCategorySelect as EventListener);
+    return () => {
+      window.removeEventListener("selectCategory", handleCategorySelect as EventListener);
+    };
   }, []);
 
   const fetchProducts = async () => {
@@ -160,6 +172,9 @@ const Index = () => {
       <Header />
 
       <main className="flex-1">
+        {/* Top Banner Slider - Flipkart style */}
+        <BannerSlider />
+
         {/* Offer Banner */}
         <OfferBanner />
 
