@@ -86,6 +86,14 @@ export const translations = {
     // Service Charges
     serviceCharges: 'Service Charges',
     serviceChargesDescription: 'Transparent pricing for all our services',
+    
+    // Offers
+    specialOffer: 'Special Offer!',
+    clickForPromo: 'Click for promo code',
+    promoCode: 'Promo Code',
+    codeCopied: 'Code Copied!',
+    usePromoCode: 'Use Promo Code',
+    gotIt: 'Got it!',
   },
   
   mr: {
@@ -167,6 +175,14 @@ export const translations = {
     // Service Charges
     serviceCharges: 'सेवा शुल्क',
     serviceChargesDescription: 'आमच्या सर्व सेवांसाठी पारदर्शक किंमती',
+    
+    // Offers
+    specialOffer: 'विशेष ऑफर!',
+    clickForPromo: 'प्रोमो कोडसाठी क्लिक करा',
+    promoCode: 'प्रोमो कोड',
+    codeCopied: 'कोड कॉपी झाला!',
+    usePromoCode: 'प्रोमो कोड वापरा',
+    gotIt: 'समजले!',
   },
   
   hi: {
@@ -248,6 +264,14 @@ export const translations = {
     // Service Charges
     serviceCharges: 'सेवा शुल्क',
     serviceChargesDescription: 'हमारी सभी सेवाओं के लिए पारदर्शी मूल्य',
+    
+    // Offers
+    specialOffer: 'विशेष ऑफर!',
+    clickForPromo: 'प्रोमो कोड के लिए क्लिक करें',
+    promoCode: 'प्रोमो कोड',
+    codeCopied: 'कोड कॉपी हुआ!',
+    usePromoCode: 'प्रोमो कोड उपयोग करें',
+    gotIt: 'समझ गया!',
   },
 } as const;
 

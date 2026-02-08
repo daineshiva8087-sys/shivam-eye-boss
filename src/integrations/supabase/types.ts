@@ -97,10 +97,18 @@ export type Database = {
           banner_image_url: string | null
           created_at: string
           description: string | null
+          discount_type: string | null
+          discount_value: number | null
           display_order: number | null
+          end_date: string | null
+          end_time: string | null
           highlight_text: string | null
           id: string
           is_active: boolean
+          promo_code: string | null
+          show_popup: boolean | null
+          start_date: string | null
+          start_time: string | null
           title: string
           updated_at: string
         }
@@ -108,10 +116,18 @@ export type Database = {
           banner_image_url?: string | null
           created_at?: string
           description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           display_order?: number | null
+          end_date?: string | null
+          end_time?: string | null
           highlight_text?: string | null
           id?: string
           is_active?: boolean
+          promo_code?: string | null
+          show_popup?: boolean | null
+          start_date?: string | null
+          start_time?: string | null
           title: string
           updated_at?: string
         }
@@ -119,10 +135,18 @@ export type Database = {
           banner_image_url?: string | null
           created_at?: string
           description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           display_order?: number | null
+          end_date?: string | null
+          end_time?: string | null
           highlight_text?: string | null
           id?: string
           is_active?: boolean
+          promo_code?: string | null
+          show_popup?: boolean | null
+          start_date?: string | null
+          start_time?: string | null
           title?: string
           updated_at?: string
         }
@@ -497,6 +521,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      is_offer_active: {
+        Args: { offer_row: Database["public"]["Tables"]["offers"]["Row"] }
+        Returns: boolean
+      }
+      validate_promo_code: {
+        Args: { code: string }
+        Returns: {
+          discount_type: string
+          discount_value: number
+          is_valid: boolean
+          offer_id: string
+          offer_title: string
+        }[]
       }
     }
     Enums: {

@@ -9,6 +9,7 @@ import { QuotationModal } from "@/components/QuotationModal";
 import { ServiceModal } from "@/components/ServiceModal";
 import { FloatingButtons } from "@/components/FloatingButtons";
 import { OfferBanner } from "@/components/OfferBanner";
+import { OfferPopup } from "@/components/OfferPopup";
 import { ComboSection } from "@/components/ComboSection";
 import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
@@ -311,6 +312,7 @@ const Index = () => {
         onOpenChange={setDetailModalOpen}
         onRequestQuote={() => handleRequestQuote(selectedProduct!)}
       />
+      <OfferPopup />
     </div>
   );
 };

@@ -19,8 +19,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Upload, X, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Upload, X, Sparkles, Tag, Calendar, Clock, Percent } from "lucide-react";
 
 interface Offer {
   id: string;
@@ -30,6 +37,14 @@ interface Offer {
   highlight_text: string | null;
   is_active: boolean;
   display_order: number;
+  promo_code: string | null;
+  discount_type: string | null;
+  discount_value: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  show_popup: boolean;
 }
 
 interface OfferFormData {
@@ -39,6 +54,14 @@ interface OfferFormData {
   highlight_text: string;
   is_active: boolean;
   display_order: string;
+  promo_code: string;
+  discount_type: string;
+  discount_value: string;
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+  show_popup: boolean;
 }
 
 const defaultFormData: OfferFormData = {
@@ -48,6 +71,14 @@ const defaultFormData: OfferFormData = {
   highlight_text: "",
   is_active: true,
   display_order: "0",
+  promo_code: "",
+  discount_type: "",
+  discount_value: "",
+  start_date: "",
+  end_date: "",
+  start_time: "",
+  end_time: "",
+  show_popup: false,
 };
 
 export function OfferManagement() {
@@ -127,6 +158,14 @@ export function OfferManagement() {
         highlight_text: formData.highlight_text || null,
         is_active: formData.is_active,
         display_order: parseInt(formData.display_order) || 0,
+        promo_code: formData.promo_code?.toUpperCase() || null,
+        discount_type: formData.discount_type || null,
+        discount_value: formData.discount_value ? parseFloat(formData.discount_value) : null,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        start_time: formData.start_time || null,
+        end_time: formData.end_time || null,
+        show_popup: formData.show_popup,
       };
 
       if (editingOffer) {
@@ -169,6 +208,14 @@ export function OfferManagement() {
       highlight_text: offer.highlight_text || "",
       is_active: offer.is_active,
       display_order: offer.display_order.toString(),
+      promo_code: offer.promo_code || "",
+      discount_type: offer.discount_type || "",
+      discount_value: offer.discount_value?.toString() || "",
+      start_date: offer.start_date || "",
+      end_date: offer.end_date || "",
+      start_time: offer.start_time || "",
+      end_time: offer.end_time || "",
+      show_popup: offer.show_popup || false,
     });
     setImagePreview(offer.banner_image_url || "");
     setModalOpen(true);
@@ -218,14 +265,15 @@ export function OfferManagement() {
       </div>
 
       {offers.length > 0 ? (
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Image</TableHead>
                 <TableHead>Title</TableHead>
-                <TableHead>Highlight</TableHead>
-                <TableHead>Order</TableHead>
+                <TableHead>Promo Code</TableHead>
+                <TableHead>Discount</TableHead>
+                <TableHead>Schedule</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -246,9 +294,31 @@ export function OfferManagement() {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{offer.title}</TableCell>
-                  <TableCell>{offer.highlight_text || "-"}</TableCell>
-                  <TableCell>{offer.display_order}</TableCell>
+                  <TableCell className="font-medium max-w-[150px] truncate">{offer.title}</TableCell>
+                  <TableCell>
+                    {offer.promo_code ? (
+                      <code className="bg-secondary px-2 py-1 rounded text-xs font-mono">
+                        {offer.promo_code}
+                      </code>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {offer.discount_type && offer.discount_value ? (
+                      <span className="text-cctv-success text-sm font-medium">
+                        {offer.discount_type === 'percentage' 
+                          ? `${offer.discount_value}%` 
+                          : `₹${offer.discount_value}`}
+                      </span>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    {offer.start_date || offer.end_date ? (
+                      <div className="flex flex-col gap-0.5">
+                        {offer.start_date && <span>{offer.start_date}</span>}
+                        {offer.end_date && <span>to {offer.end_date}</span>}
+                      </div>
+                    ) : "Always"}
+                  </TableCell>
                   <TableCell>
                     <span className={`text-sm font-medium ${offer.is_active ? "text-cctv-success" : "text-destructive"}`}>
                       {offer.is_active ? "Active" : "Inactive"}
@@ -355,23 +425,140 @@ export function OfferManagement() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="order">Display Order</Label>
-                <Input
-                  id="order"
-                  type="number"
-                  min="0"
-                  value={formData.display_order}
-                  onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
-                />
+            {/* Promo Code & Discount Section */}
+            <div className="border-t border-border pt-4 mt-4">
+              <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Promo Code & Discount
+              </h4>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="promo_code">Promo Code</Label>
+                  <Input
+                    id="promo_code"
+                    value={formData.promo_code}
+                    onChange={(e) => setFormData({ ...formData, promo_code: e.target.value.toUpperCase() })}
+                    placeholder="e.g., SAVE20, DIWALI2024"
+                    className="font-mono"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="discount_type">Discount Type</Label>
+                    <Select
+                      value={formData.discount_type}
+                      onValueChange={(value) => setFormData({ ...formData, discount_type: value })}
+                    >
+                      <SelectTrigger id="discount_type">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                        <SelectItem value="flat">Flat Amount (₹)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="discount_value">Discount Value</Label>
+                    <Input
+                      id="discount_value"
+                      type="number"
+                      min="0"
+                      value={formData.discount_value}
+                      onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
+                      placeholder={formData.discount_type === 'percentage' ? "e.g., 10" : "e.g., 500"}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between pt-6">
-                <Label htmlFor="active">Active</Label>
+            </div>
+
+            {/* Schedule Section */}
+            <div className="border-t border-border pt-4 mt-4">
+              <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Schedule (Optional)
+              </h4>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start_date">Start Date</Label>
+                    <Input
+                      id="start_date"
+                      type="date"
+                      value={formData.start_date}
+                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end_date">End Date</Label>
+                    <Input
+                      id="end_date"
+                      type="date"
+                      value={formData.end_date}
+                      onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start_time">Start Time</Label>
+                    <Input
+                      id="start_time"
+                      type="time"
+                      value={formData.start_time}
+                      onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end_time">End Time</Label>
+                    <Input
+                      id="end_time"
+                      type="time"
+                      value={formData.end_time}
+                      onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Settings Section */}
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="order">Display Order</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    min="0"
+                    value={formData.display_order}
+                    onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-6">
+                  <Label htmlFor="active">Active</Label>
+                  <Switch
+                    id="active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4 p-3 bg-secondary/50 rounded-lg">
+                <div>
+                  <Label htmlFor="show_popup" className="cursor-pointer">Show Popup</Label>
+                  <p className="text-xs text-muted-foreground">Show this offer as a popup when users visit</p>
+                </div>
                 <Switch
-                  id="active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  id="show_popup"
+                  checked={formData.show_popup}
+                  onCheckedChange={(checked) => setFormData({ ...formData, show_popup: checked })}
                 />
               </div>
             </div>
