@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      banners: {
+        Row: {
+          auto_slide_interval: number
+          click_action_type: string
+          click_action_value: string | null
+          created_at: string
+          display_order: number
+          end_date: string | null
+          end_time: string | null
+          id: string
+          image_fit_mode: string
+          image_url: string
+          is_active: boolean
+          start_date: string | null
+          start_time: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          auto_slide_interval?: number
+          click_action_type?: string
+          click_action_value?: string | null
+          created_at?: string
+          display_order?: number
+          end_date?: string | null
+          end_time?: string | null
+          id?: string
+          image_fit_mode?: string
+          image_url: string
+          is_active?: boolean
+          start_date?: string | null
+          start_time?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auto_slide_interval?: number
+          click_action_type?: string
+          click_action_value?: string | null
+          created_at?: string
+          display_order?: number
+          end_date?: string | null
+          end_time?: string | null
+          id?: string
+          image_fit_mode?: string
+          image_url?: string
+          is_active?: boolean
+          start_date?: string | null
+          start_time?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       combo_offers: {
         Row: {
           combo_price: number
@@ -520,6 +574,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_banner_active: {
+        Args: { banner_row: Database["public"]["Tables"]["banners"]["Row"] }
         Returns: boolean
       }
       is_offer_active: {

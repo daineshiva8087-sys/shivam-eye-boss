@@ -51,6 +51,7 @@ import {
   Sparkles,
   Gift,
   Receipt,
+  Image,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
@@ -58,6 +59,7 @@ import { ComboManagement } from "@/components/admin/ComboManagement";
 import { QuotationBuilder } from "@/components/admin/QuotationBuilder";
 import { ServiceChargesManagement } from "@/components/admin/ServiceChargesManagement";
 import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
+import { BannerManagement } from "@/components/admin/BannerManagement";
 
 interface ProductFormData {
   name: string;
@@ -334,6 +336,10 @@ export default function Admin() {
               <Package className="h-4 w-4" />
               Products
             </TabsTrigger>
+            <TabsTrigger value="banners" className="gap-2">
+              <Image className="h-4 w-4" />
+              Banners
+            </TabsTrigger>
             <TabsTrigger value="services" className="gap-2">
               <Wrench className="h-4 w-4" />
               Services
@@ -455,6 +461,11 @@ export default function Admin() {
                 <p>No products yet. Add your first product!</p>
               </div>
             )}
+          </TabsContent>
+
+          {/* Banners Tab */}
+          <TabsContent value="banners">
+            <BannerManagement />
           </TabsContent>
 
           {/* Services Tab */}
