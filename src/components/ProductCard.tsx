@@ -1,6 +1,7 @@
 import { Product } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/hooks/useLanguage";
 import { ShoppingCart, Camera, Percent } from "lucide-react";
 
 interface ProductCardProps {
@@ -9,6 +10,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
+  const { t } = useLanguage();
+
   const stockStatus = product.stock_quantity > 10
     ? "In Stock"
     : product.stock_quantity > 0
@@ -92,7 +95,7 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
             className="w-full bg-primary hover:bg-primary/90"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Request Quote
+            {t('requestQuote')}
           </Button>
         </div>
       </div>

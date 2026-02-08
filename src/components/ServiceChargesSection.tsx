@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wrench, Cable, Settings } from "lucide-react";
 
@@ -25,6 +26,7 @@ const getIcon = (name: string) => {
 };
 
 export function ServiceChargesSection() {
+  const { t } = useLanguage();
   const [services, setServices] = useState<ServiceCharge[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,10 +54,10 @@ export function ServiceChargesSection() {
       <div className="container">
         <div className="text-center mb-10">
           <h2 className="font-display text-3xl font-bold mb-2">
-            Services & Charges
+            {t('serviceCharges')}
           </h2>
           <p className="text-muted-foreground">
-            Professional CCTV installation and maintenance services
+            {t('serviceChargesDescription')}
           </p>
         </div>
 

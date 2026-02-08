@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BUSINESS_INFO } from "@/lib/supabase";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Shield, Phone, MapPin, Eye, MessageCircle } from "lucide-react";
 
 interface HeroSectionProps {
@@ -7,6 +8,8 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onBookService }: HeroSectionProps) {
+  const { t } = useLanguage();
+
   const handleOpenMaps = () => {
     window.open(BUSINESS_INFO.googleMapsUrl, "_blank");
   };
@@ -34,22 +37,22 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
           {/* Security Badge */}
           <div className="inline-flex items-center gap-2 security-badge animate-fade-in">
             <Shield className="h-4 w-4" />
-            <span>Trusted Security Partner</span>
+            <span>{t('trustedSecurityPartner')}</span>
           </div>
 
           {/* Brand Name */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground animate-slide-up">
-            SHIVAM CCTV
+            {t('brandName')}
           </h1>
 
-          {/* Marathi Tagline */}
+          {/* Tagline */}
           <p className="text-2xl md:text-3xl font-semibold text-gradient animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            जालना मधील नं 1 CCTV सोल्युशन
+            {t('tagline')}
           </p>
 
           {/* Since 2016 */}
           <p className="text-lg md:text-xl text-muted-foreground animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            2016 पासून जालनेकरच्या सेवेत
+            {t('since2016')}
           </p>
 
           {/* CTA Buttons */}
@@ -60,7 +63,7 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
               className="bg-primary hover:bg-primary/90 text-lg px-6"
             >
               <Eye className="h-5 w-5 mr-2" />
-              Free Site Survey
+              {t('freeSiteSurvey')}
             </Button>
             <Button
               size="lg"
@@ -69,7 +72,7 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
               className="text-lg px-6"
             >
               <Phone className="h-5 w-5 mr-2" />
-              Call Now
+              {t('callNow')}
             </Button>
             <Button
               size="lg"
@@ -77,7 +80,7 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
               className="bg-[#25D366] hover:bg-[#20BD5A] text-white text-lg px-6"
             >
               <MessageCircle className="h-5 w-5 mr-2" />
-              WhatsApp Now
+              {t('whatsAppNow')}
             </Button>
           </div>
 

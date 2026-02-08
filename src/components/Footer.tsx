@@ -1,10 +1,23 @@
-import { Camera, Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { BUSINESS_INFO } from "@/lib/supabase";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function Footer() {
+  const { t } = useLanguage();
+
   const handleOpenMaps = () => {
     window.open(BUSINESS_INFO.googleMapsUrl, "_blank");
+  };
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(
+      `नमस्कार,\nमी Shivam CCTV App वरून संपर्क करत आहे.\nकृपया माहिती द्या.`
+    );
+    window.open(
+      `https://wa.me/${BUSINESS_INFO.whatsappNumber}?text=${message}`,
+      "_blank"
+    );
   };
 
   return (
@@ -14,35 +27,37 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Camera className="h-6 w-6 text-primary-foreground" />
-              </div>
+              <img 
+                src="/app-icon.png" 
+                alt="Shivam CCTV" 
+                className="h-10 w-10 rounded-lg object-cover"
+              />
               <span className="font-display text-xl font-bold">Shivam CCTV</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Your trusted partner for professional CCTV installation and security solutions in Jalna.
+              {t('footerTagline')}
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="font-display font-semibold text-foreground">Quick Links</h3>
+            <h3 className="font-display font-semibold text-foreground">{t('quickLinks')}</h3>
             <nav className="flex flex-col gap-2">
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Home
+                {t('home')}
               </Link>
               <Link to="/services" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Services
+                {t('services')}
               </Link>
               <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Contact
+                {t('contact')}
               </Link>
             </nav>
           </div>
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="font-display font-semibold text-foreground">Contact Us</h3>
+            <h3 className="font-display font-semibold text-foreground">{t('contactUs')}</h3>
             <div className="space-y-3">
               <a
                 href={`tel:${BUSINESS_INFO.phone}`}
@@ -51,6 +66,13 @@ export function Footer() {
                 <Phone className="h-4 w-4 text-primary" />
                 {BUSINESS_INFO.phone}
               </a>
+              <button
+                onClick={handleWhatsApp}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                WhatsApp
+              </button>
               <a
                 href={`mailto:${BUSINESS_INFO.email}`}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -70,7 +92,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          © Shivam CCTV | 2016 पासून जालनेकरच्या सेवेत
+          {t('footerCopyright')}
         </div>
       </div>
     </footer>

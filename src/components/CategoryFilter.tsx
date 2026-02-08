@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface CategoryFilterProps {
   categories: string[];
@@ -12,6 +13,8 @@ export function CategoryFilter({
   selectedCategory,
   onCategoryChange,
 }: CategoryFilterProps) {
+  const { t } = useLanguage();
+
   return (
     <ScrollArea className="w-full whitespace-nowrap">
       <div className="flex gap-2 pb-4">
@@ -21,7 +24,7 @@ export function CategoryFilter({
           onClick={() => onCategoryChange("all")}
           className={selectedCategory === "all" ? "bg-primary" : ""}
         >
-          All Products
+          {t('allCategories')}
         </Button>
         {categories.map((category) => (
           <Button
