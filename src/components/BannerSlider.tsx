@@ -36,11 +36,7 @@ export function BannerSlider() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
-  useEffect(() => {
-    fetchBanners();
-  }, []);
-
-  const isBannerCurrentlyActive = (banner: Banner): boolean => {
+  const isBannerCurrentlyActive = useCallback((banner: Banner): boolean => {
     if (!banner.is_active) return false;
 
     const now = new Date();
@@ -54,9 +50,9 @@ export function BannerSlider() {
     }
 
     return true;
-  };
+  }, []);
 
-  const fetchBanners = async () => {
+  const fetchBanners = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("banners")
@@ -67,13 +63,42 @@ export function BannerSlider() {
       if (error) throw error;
 
       const activeBanners = (data || []).filter(isBannerCurrentlyActive);
+      console.log("[BannerSlider] Loaded banners:", activeBanners.length, "active out of", data?.length || 0);
       setBanners(activeBanners);
     } catch (error) {
-      console.error("Error fetching banners:", error);
+      console.error("[BannerSlider] Error fetching banners:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [isBannerCurrentlyActive]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchBanners();
+  }, [fetchBanners]);
+
+  // Real-time subscription for instant updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('banners-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'banners',
+        },
+        (payload) => {
+          console.log("[BannerSlider] Real-time update:", payload.eventType);
+          fetchBanners();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBanners]);
 
   // Auto-slide functionality
   useEffect(() => {

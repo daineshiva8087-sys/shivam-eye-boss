@@ -297,17 +297,55 @@ export function BannerManagement() {
   };
 
   const handleToggleActive = async (banner: Banner) => {
+    const newStatus = !banner.is_active;
     try {
       const { error } = await supabase
         .from("banners")
-        .update({ is_active: !banner.is_active })
+        .update({ is_active: newStatus })
         .eq("id", banner.id);
 
       if (error) throw error;
+      
+      toast({
+        title: newStatus ? "Banner is now ON" : "Banner is now OFF",
+        description: newStatus 
+          ? "Banner will be visible on Home Page" 
+          : "Banner is hidden from Home Page",
+      });
+      
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling banner:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update banner status",
+        variant: "destructive",
+      });
     }
+  };
+
+  const getBannerVisibilityStatus = (banner: Banner): { visible: boolean; reason: string } => {
+    if (!banner.is_active) {
+      return { visible: false, reason: "Banner is OFF" };
+    }
+
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+
+    if (banner.start_date && currentDate < banner.start_date) {
+      return { visible: false, reason: `Scheduled to start on ${banner.start_date}` };
+    }
+    if (banner.end_date && currentDate > banner.end_date) {
+      return { visible: false, reason: `Ended on ${banner.end_date}` };
+    }
+    if (banner.start_time && banner.end_time) {
+      if (currentTime < banner.start_time || currentTime > banner.end_time) {
+        return { visible: false, reason: `Active only ${banner.start_time} - ${banner.end_time}` };
+      }
+    }
+
+    return { visible: true, reason: "Visible on Home Page" };
   };
 
   const handleMoveOrder = async (banner: Banner, direction: "up" | "down") => {
@@ -440,41 +478,57 @@ export function BannerManagement() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleActive(banner)}
-                            className={cn(
-                              "flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-200 cursor-pointer border-2",
-                              banner.is_active
-                                ? "bg-cctv-success/20 text-cctv-success border-cctv-success/40 hover:bg-cctv-success/30"
-                                : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-                            )}
-                          >
-                            {banner.is_active ? (
-                              <>
-                                <Check className="h-4 w-4" />
-                                <span>ON</span>
-                              </>
-                            ) : (
-                              <>
-                                <X className="h-4 w-4" />
-                                <span>OFF</span>
-                              </>
-                            )}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            {banner.is_active
-                              ? "Banner will be visible on Home Page"
-                              : "Banner is hidden from Home Page"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <div className="flex flex-col gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleActive(banner)}
+                              className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-200 cursor-pointer border-2",
+                                banner.is_active
+                                  ? "bg-cctv-success/20 text-cctv-success border-cctv-success/40 hover:bg-cctv-success/30"
+                                  : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+                              )}
+                            >
+                              {banner.is_active ? (
+                                <>
+                                  <Check className="h-4 w-4" />
+                                  <span>ON</span>
+                                </>
+                              ) : (
+                                <>
+                                  <X className="h-4 w-4" />
+                                  <span>OFF</span>
+                                </>
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {banner.is_active
+                                ? "Banner will be visible on Home Page"
+                                : "Banner is hidden from Home Page"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {/* Visibility status indicator */}
+                      {(() => {
+                        const status = getBannerVisibilityStatus(banner);
+                        return (
+                          <span className={cn(
+                            "text-xs px-2 py-0.5 rounded",
+                            status.visible 
+                              ? "bg-cctv-success/10 text-cctv-success" 
+                              : "bg-destructive/10 text-destructive"
+                          )}>
+                            {status.visible ? "✓ Live" : `⚠ ${status.reason}`}
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
