@@ -401,8 +401,14 @@ export function BannerManagement() {
         <div>
           <h2 className="font-display text-2xl font-bold">Banner Slider</h2>
           <p className="text-sm text-muted-foreground">
-            Manage homepage banners like Flipkart. Recommended size: 1080×420px (21:9)
+            Manage homepage banners with premium Flipkart/Amazon style cards
           </p>
+          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
+            <Image className="h-4 w-4 text-primary" />
+            <span className="text-xs font-medium text-primary">
+              Recommended: 1080×420px (21:9 ratio) for best display
+            </span>
+          </div>
         </div>
         <Button onClick={() => setModalOpen(true)} className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
