@@ -14,7 +14,7 @@ import { ComboSection } from "@/components/ComboSection";
 import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { AboutSection } from "@/components/AboutSection";
-import { BannerSlider } from "@/components/BannerSlider";
+import { BannerSlider } from "@/components/banner";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2, Camera, Wrench, Shield, CheckCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,11 +40,23 @@ const Index = () => {
       setSearchQuery("");
     };
 
+    // Listen for product detail open from banner clicks
+    const handleProductDetailOpen = (e: CustomEvent<{ productId: string }>) => {
+      const product = products.find(p => p.id === e.detail.productId);
+      if (product) {
+        setSelectedProduct(product);
+        setDetailModalOpen(true);
+      }
+    };
+
     window.addEventListener("selectCategory", handleCategorySelect as EventListener);
+    window.addEventListener("openProductDetail", handleProductDetailOpen as EventListener);
+    
     return () => {
       window.removeEventListener("selectCategory", handleCategorySelect as EventListener);
+      window.removeEventListener("openProductDetail", handleProductDetailOpen as EventListener);
     };
-  }, []);
+  }, [products]);
 
   const fetchProducts = async () => {
     try {
