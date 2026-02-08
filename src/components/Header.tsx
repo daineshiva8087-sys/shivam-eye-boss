@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Camera, Menu, X, User, LogOut, Settings } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
+import { Menu, X, User, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -10,9 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function Header() {
   const { user, isAdmin, signOut } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -41,27 +44,29 @@ export function Header() {
             to="/"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Home
+            {t('home')}
           </Link>
           <Link
             to="/services"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Services
+            {t('services')}
           </Link>
           <Link
             to="/contact"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Contact
+            {t('contact')}
           </Link>
+
+          <LanguageSwitcher />
 
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
-                  Account
+                  {t('account')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -69,14 +74,14 @@ export function Header() {
                   <>
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       <Settings className="h-4 w-4 mr-2" />
-                      Admin Panel
+                      {t('adminPanel')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
                 )}
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  {t('signOut')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -86,22 +91,25 @@ export function Header() {
               size="sm"
               className="bg-primary hover:bg-primary/90"
             >
-              Sign In
+              {t('signIn')}
             </Button>
           )}
         </nav>
 
         {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
+        <div className="flex md:hidden items-center gap-2">
+          <LanguageSwitcher />
+          <button
+            className="p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
@@ -112,21 +120,21 @@ export function Header() {
             className="block text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Home
+            {t('home')}
           </Link>
           <Link
             to="/services"
             className="block text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Services
+            {t('services')}
           </Link>
           <Link
             to="/contact"
             className="block text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Contact
+            {t('contact')}
           </Link>
 
           {user ? (
@@ -137,7 +145,7 @@ export function Header() {
                   className="block text-sm font-medium text-primary hover:text-primary/90"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Admin Panel
+                  {t('adminPanel')}
                 </Link>
               )}
               <button
@@ -147,7 +155,7 @@ export function Header() {
                 }}
                 className="block text-sm font-medium text-muted-foreground hover:text-foreground"
               >
-                Sign Out
+                {t('signOut')}
               </button>
             </>
           ) : (
@@ -159,7 +167,7 @@ export function Header() {
               size="sm"
               className="w-full bg-primary hover:bg-primary/90"
             >
-              Sign In
+              {t('signIn')}
             </Button>
           )}
         </nav>

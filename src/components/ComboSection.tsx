@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/hooks/useLanguage";
 import { ComboCard, ComboOffer } from "./ComboCard";
 import { ComboQuotationModal } from "./ComboQuotationModal";
 import { Loader2, Gift } from "lucide-react";
 
 export function ComboSection() {
+  const { t } = useLanguage();
   const [combos, setCombos] = useState<ComboOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCombo, setSelectedCombo] = useState<ComboOffer | null>(null);
@@ -74,10 +76,10 @@ export function ComboSection() {
             <span className="font-medium text-sm uppercase tracking-wider">Special Deals</span>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Combo Offers
+            {t('comboOffers')}
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Save more with our specially curated combo packages
+            {t('comboOffersDescription')}
           </p>
         </div>
 

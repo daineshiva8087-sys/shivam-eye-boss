@@ -13,11 +13,13 @@ import { ComboSection } from "@/components/ComboSection";
 import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { AboutSection } from "@/components/AboutSection";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2, Camera, Wrench, Shield, CheckCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const Index = () => {
+  const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -105,9 +107,9 @@ const Index = () => {
           (query.includes("dahua") && name.includes("dahua"));
         
         // Check price filter
-        const priceMatch = maxPrice ? price <= maxPrice : true;
+        const priceFilterMatch = maxPrice ? price <= maxPrice : true;
         
-        return textMatch || (maxPrice && priceMatch);
+        return textMatch || (maxPrice && priceFilterMatch);
       });
     }
     
@@ -132,23 +134,23 @@ const Index = () => {
   const services = [
     {
       icon: Camera,
-      title: "CCTV Installation",
-      description: "Professional installation for homes and businesses",
+      title: t('cctvInstallation'),
+      description: t('cctvInstallationDesc'),
     },
     {
       icon: Wrench,
-      title: "Maintenance & Repair",
-      description: "Regular maintenance and quick repair services",
+      title: t('maintenanceRepair'),
+      description: t('maintenanceRepairDesc'),
     },
     {
       icon: Shield,
-      title: "24/7 Monitoring",
-      description: "Round-the-clock surveillance support",
+      title: t('monitoring24x7'),
+      description: t('monitoring24x7Desc'),
     },
     {
       icon: CheckCircle,
-      title: "Free Site Survey",
-      description: "Complimentary security assessment",
+      title: t('freeSiteSurveyService'),
+      description: t('freeSiteSurveyServiceDesc'),
     },
   ];
 
@@ -171,7 +173,7 @@ const Index = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search camera, brand, MP, price..."
+                  placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-12 pr-4 py-6 text-base rounded-xl border-border bg-background shadow-sm"
@@ -186,10 +188,10 @@ const Index = () => {
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Products
+                {t('ourProducts')}
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Browse our wide range of CCTV cameras and security equipment
+                {t('ourProductsDescription')}
               </p>
             </div>
 
@@ -229,8 +231,8 @@ const Index = () => {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>{searchQuery ? "No products found" : "No products available in this category."}</p>
-                {!searchQuery && <p className="text-sm mt-2">Check back soon for new products!</p>}
+                <p>{searchQuery ? t('noProductsFound') : t('noProductsAvailable')}</p>
+                {!searchQuery && <p className="text-sm mt-2">{t('checkBackSoon')}</p>}
               </div>
             )}
           </div>
@@ -247,10 +249,10 @@ const Index = () => {
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Services
+                {t('ourServices')}
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Complete security solutions tailored to your needs
+                {t('ourServicesDescription')}
               </p>
             </div>
 
@@ -280,7 +282,7 @@ const Index = () => {
                 onClick={handleOpenServiceModal}
                 className="bg-primary hover:bg-primary/90"
               >
-                Book a Service
+                {t('bookAService')}
               </Button>
             </div>
           </div>
