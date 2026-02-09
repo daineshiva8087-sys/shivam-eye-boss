@@ -277,4 +277,9 @@
       transform: translateY(0);
     }
   }
+
+  /* Safe area for sticky bottom bars */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
