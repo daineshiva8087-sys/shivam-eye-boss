@@ -37,16 +37,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     >
       {/* Content container - centered */}
       <div className="flex flex-col items-center justify-center gap-6">
-        {/* App Icon with zoom animation */}
-        <div 
-          className={`transition-all duration-500 ease-in-out ${
-            animationPhase === 'initial' 
-              ? 'opacity-0 scale-100' 
-              : animationPhase === 'zooming'
-              ? 'opacity-100 scale-[1.06]'
-              : 'opacity-100 scale-100'
-          }`}
-        >
+        {/* App Icon - static, no animation */}
+        <div>
           <img 
             src={appIcon} 
             alt="Shivam CCTV" 
@@ -55,24 +47,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           />
         </div>
 
-        {/* Brand Text with glow effect */}
-        <div 
-          className={`flex flex-col items-center gap-1 transition-all duration-500 ease-in-out ${
-            animationPhase === 'initial' 
-              ? 'opacity-0' 
-              : 'opacity-100'
-          }`}
-        >
+        {/* Brand Text - static, no animation */}
+        <div className="flex flex-col items-center gap-1">
           <h1 
-            className={`text-3xl sm:text-4xl font-display font-bold tracking-tight splash-text-glow ${
-              animationPhase === 'zooming' ? 'splash-glow-pulse' : ''
-            }`}
-            style={{
-              color: 'hsl(var(--primary))',
-              textShadow: animationPhase !== 'initial' 
-                ? '0 0 10px hsl(var(--primary) / 0.6), 0 0 20px hsl(var(--primary) / 0.4), 0 0 30px hsl(var(--primary) / 0.2), 0 0 8px rgba(255, 255, 255, 0.3)'
-                : 'none',
-            }}
+            className="text-3xl sm:text-4xl font-display font-bold tracking-tight"
+            style={{ color: 'hsl(var(--primary))' }}
           >
             Shivam CCTV
           </h1>
