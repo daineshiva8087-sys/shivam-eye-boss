@@ -55,33 +55,39 @@ export function HeroSection({ onBookService }: HeroSectionProps) {
             {t('since2016')}
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <Button
-              size="lg"
-              onClick={onBookService}
-              className="bg-primary hover:bg-primary/90 text-lg px-6"
-            >
-              <Eye className="h-5 w-5 mr-2" />
-              {t('freeSiteSurvey')}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={handleCall}
-              className="text-lg px-6"
-            >
-              <Phone className="h-5 w-5 mr-2" />
-              {t('callNow')}
-            </Button>
-            <Button
-              size="lg"
-              onClick={handleWhatsApp}
-              className="bg-[#25D366] hover:bg-[#20BD5A] text-white text-lg px-6"
-            >
-              <MessageCircle className="h-5 w-5 mr-2" />
-              {t('whatsAppNow')}
-            </Button>
+          {/* CTA Buttons - Prominent placement */}
+          <div className="flex flex-col gap-3 pt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            {/* Primary CTAs - Call & WhatsApp side by side on mobile */}
+            <div className="flex gap-2 justify-center">
+              <Button
+                size="lg"
+                onClick={handleCall}
+                className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-base sm:text-lg px-4 sm:px-6 h-12 sm:h-14 shadow-lg shadow-primary/30"
+              >
+                <Phone className="h-5 w-5 mr-2" />
+                {t('callNow')}
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleWhatsApp}
+                className="flex-1 sm:flex-none bg-[#25D366] hover:bg-[#20BD5A] text-white text-base sm:text-lg px-4 sm:px-6 h-12 sm:h-14 shadow-lg shadow-[#25D366]/30"
+              >
+                <MessageCircle className="h-5 w-5 mr-2" />
+                {t('whatsAppNow')}
+              </Button>
+            </div>
+            {/* Free Site Survey CTA */}
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={onBookService}
+                className="text-base sm:text-lg px-6 h-11 border-primary/50 hover:bg-primary/10 hover:border-primary"
+              >
+                <Eye className="h-5 w-5 mr-2 text-primary" />
+                {t('freeSiteSurvey')}
+              </Button>
+            </div>
           </div>
 
           {/* Business Info */}

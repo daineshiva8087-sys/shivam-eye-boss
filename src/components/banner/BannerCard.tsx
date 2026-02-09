@@ -41,22 +41,21 @@ export function BannerCard({
       onClick={onClick}
       className={cn(
         "relative w-full overflow-hidden cursor-pointer",
-        // Premium glassmorphism card with 18px radius
-        "rounded-[18px]",
-        // Strong elevation shadow for depth
-        "shadow-[0_12px_35px_rgba(0,0,0,0.55)]",
-        // Glassmorphism border
-        "border border-white/[0.12]",
-        // Premium gradient background with blur effect
-        "bg-gradient-to-br from-card/95 via-card/90 to-card/85",
-        "backdrop-blur-sm",
-        // Ring glow effect on hover (red/orange tone)
-        "ring-1 ring-primary/10 hover:ring-primary/30",
+        // Amazon-style premium card with rounded corners
+        "rounded-2xl md:rounded-3xl",
+        // Strong elevation shadow - lifted look (no white background)
+        "shadow-[0_8px_30px_rgba(0,0,0,0.4),0_4px_12px_rgba(0,0,0,0.3)]",
+        // Subtle border for definition
+        "border border-white/[0.08]",
+        // Premium gradient background
+        "bg-gradient-to-br from-card via-card/95 to-card/90",
+        // Ring glow effect on hover
+        "ring-1 ring-primary/5 hover:ring-primary/25",
         // Smooth transitions
-        "transition-all duration-500 ease-out",
-        // Scale effect on hover
-        "hover:scale-[1.02] hover:-translate-y-1",
-        "hover:shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_30px_rgba(220,38,38,0.15)]",
+        "transition-all duration-400 ease-out",
+        // Scale effect on hover - Amazon style subtle lift
+        "hover:scale-[1.015] hover:-translate-y-0.5",
+        "hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_20px_rgba(220,38,38,0.12)]",
         "group",
         className
       )}
@@ -147,9 +146,9 @@ export function BannerCard({
             size="sm"
             className={cn(
               "w-fit mt-auto",
-              // Red gradient background
-              "bg-gradient-to-r from-primary to-red-600",
-              "hover:from-red-600 hover:to-primary",
+              // Primary gradient background using design tokens
+              "bg-gradient-to-r from-primary to-accent",
+              "hover:from-accent hover:to-primary",
               "text-primary-foreground font-semibold",
               // Strong shadow and glow
               "shadow-lg shadow-primary/40",
