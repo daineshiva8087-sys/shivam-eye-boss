@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { FloatingButtons } from "@/components/FloatingButtons";
 import { BUSINESS_INFO } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MapPin, MessageCircle, Clock } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Clock, Globe } from "lucide-react";
 
 export default function Contact() {
   const handleCall = () => {
@@ -103,6 +103,25 @@ export default function Contact() {
                     </h3>
                     <p className="text-muted-foreground">Monday - Saturday: 9:00 AM - 8:00 PM</p>
                     <p className="text-muted-foreground">Sunday: 10:00 AM - 4:00 PM</p>
+                  </div>
+                </div>
+
+                <div className="product-card rounded-xl p-6 flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                    <Globe className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-1">
+                      Website
+                    </h3>
+                    <a
+                      href="https://shivamcctv.in"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      🌐 shivamcctv.in
+                    </a>
                   </div>
                 </div>
               </div>

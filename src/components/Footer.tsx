@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Globe } from "lucide-react";
 import { BUSINESS_INFO } from "@/lib/supabase";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -87,6 +87,15 @@ export function Footer() {
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 {BUSINESS_INFO.address}
               </button>
+              <a
+                href="https://shivamcctv.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Globe className="h-4 w-4 text-primary" />
+                🌐 Website: shivamcctv.in
+              </a>
             </div>
           </div>
         </div>
