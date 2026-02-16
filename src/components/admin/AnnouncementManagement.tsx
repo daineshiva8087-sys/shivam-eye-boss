@@ -12,7 +12,9 @@ import { Loader2, Megaphone } from "lucide-react";
 interface Settings {
   id: string;
   is_enabled: boolean;
-  text: string;
+  text_mr: string;
+  text_hi: string;
+  text_en: string;
   bg_color: string;
   text_color: string;
   scroll_speed: string;
@@ -31,7 +33,7 @@ export function AnnouncementManagement() {
         .select("*")
         .limit(1)
         .single();
-      if (data) setSettings(data as Settings);
+      if (data) setSettings(data as unknown as Settings);
       setLoading(false);
     };
     fetch();
@@ -44,7 +46,9 @@ export function AnnouncementManagement() {
       .from("announcement_settings")
       .update({
         is_enabled: settings.is_enabled,
-        text: settings.text,
+        text_mr: settings.text_mr,
+        text_hi: settings.text_hi,
+        text_en: settings.text_en,
         bg_color: settings.bg_color,
         text_color: settings.text_color,
         scroll_speed: settings.scroll_speed,
@@ -81,14 +85,36 @@ export function AnnouncementManagement() {
           />
         </div>
 
-        {/* Text */}
+        {/* Marathi Text */}
         <div className="space-y-2">
-          <Label htmlFor="text">Banner Text (Marathi supported)</Label>
+          <Label htmlFor="text_mr">Marathi Text (मराठी)</Label>
           <Textarea
-            id="text"
-            value={settings.text}
-            onChange={(e) => setSettings({ ...settings, text: e.target.value })}
-            rows={3}
+            id="text_mr"
+            value={settings.text_mr}
+            onChange={(e) => setSettings({ ...settings, text_mr: e.target.value })}
+            rows={2}
+          />
+        </div>
+
+        {/* Hindi Text */}
+        <div className="space-y-2">
+          <Label htmlFor="text_hi">Hindi Text (हिंदी)</Label>
+          <Textarea
+            id="text_hi"
+            value={settings.text_hi}
+            onChange={(e) => setSettings({ ...settings, text_hi: e.target.value })}
+            rows={2}
+          />
+        </div>
+
+        {/* English Text */}
+        <div className="space-y-2">
+          <Label htmlFor="text_en">English Text</Label>
+          <Textarea
+            id="text_en"
+            value={settings.text_en}
+            onChange={(e) => setSettings({ ...settings, text_en: e.target.value })}
+            rows={2}
           />
         </div>
 
@@ -147,7 +173,7 @@ export function AnnouncementManagement() {
 
         {/* Preview */}
         <div className="space-y-2">
-          <Label>Preview</Label>
+          <Label>Preview (Marathi)</Label>
           <div
             className="w-full overflow-hidden rounded-lg"
             style={{ backgroundColor: settings.bg_color, height: "40px" }}
@@ -156,9 +182,9 @@ export function AnnouncementManagement() {
               className="marquee-track flex items-center h-full whitespace-nowrap font-bold text-base"
               style={{ color: settings.text_color, animationDuration: "18s" }}
             >
-              <span className="px-8">{settings.text}</span>
-              <span className="px-8">{settings.text}</span>
-              <span className="px-8">{settings.text}</span>
+              <span className="px-8">{settings.text_mr}</span>
+              <span className="px-8">{settings.text_mr}</span>
+              <span className="px-8">{settings.text_mr}</span>
             </div>
           </div>
         </div>
