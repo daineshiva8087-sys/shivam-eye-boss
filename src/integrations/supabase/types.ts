@@ -20,8 +20,10 @@ export type Database = {
           id: string
           is_enabled: boolean
           scroll_speed: string
-          text: string
           text_color: string
+          text_en: string
+          text_hi: string
+          text_mr: string
           updated_at: string
         }
         Insert: {
@@ -29,8 +31,10 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           scroll_speed?: string
-          text?: string
           text_color?: string
+          text_en?: string
+          text_hi?: string
+          text_mr?: string
           updated_at?: string
         }
         Update: {
@@ -38,8 +42,10 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           scroll_speed?: string
-          text?: string
           text_color?: string
+          text_en?: string
+          text_hi?: string
+          text_mr?: string
           updated_at?: string
         }
         Relationships: []
