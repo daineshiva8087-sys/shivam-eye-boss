@@ -95,19 +95,6 @@ export default function Contact() {
 
                 <div className="product-card rounded-xl p-6 flex items-start gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                    <Clock className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-display text-lg font-semibold text-foreground mb-1">
-                      Business Hours
-                    </h3>
-                    <p className="text-muted-foreground">Monday - Saturday: 9:00 AM - 8:00 PM</p>
-                    <p className="text-muted-foreground">Sunday: 10:00 AM - 4:00 PM</p>
-                  </div>
-                </div>
-
-                <div className="product-card rounded-xl p-6 flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
                     <Globe className="h-6 w-6 text-primary" />
                   </div>
                   <div>
@@ -122,6 +109,19 @@ export default function Contact() {
                     >
                       🌐 shivamcctv.in
                     </a>
+                  </div>
+                </div>
+
+                <div className="product-card rounded-xl p-6 flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                    <Clock className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-1">
+                      Business Hours
+                    </h3>
+                    <p className="text-muted-foreground">Monday - Saturday: 9:00 AM - 8:00 PM</p>
+                    <p className="text-muted-foreground">Sunday: 10:00 AM - 4:00 PM</p>
                   </div>
                 </div>
               </div>
