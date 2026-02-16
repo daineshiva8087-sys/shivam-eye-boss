@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_settings: {
+        Row: {
+          bg_color: string
+          id: string
+          is_enabled: boolean
+          scroll_speed: string
+          text: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          bg_color?: string
+          id?: string
+          is_enabled?: boolean
+          scroll_speed?: string
+          text?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          bg_color?: string
+          id?: string
+          is_enabled?: boolean
+          scroll_speed?: string
+          text?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           auto_slide_interval: number

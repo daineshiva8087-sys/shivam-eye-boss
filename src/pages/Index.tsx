@@ -15,6 +15,7 @@ import { ServiceChargesSection } from "@/components/ServiceChargesSection";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { AboutSection } from "@/components/AboutSection";
 import { BannerSlider } from "@/components/banner";
+import { AnnouncementMarquee } from "@/components/AnnouncementMarquee";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2, Camera, Wrench, Shield, CheckCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -189,6 +190,9 @@ const Index = () => {
 
         {/* Hero Section */}
         <HeroSection onBookService={handleOpenServiceModal} />
+
+        {/* Announcement Marquee */}
+        <AnnouncementMarquee />
 
         {/* Search Bar Section */}
         <section className="py-6 bg-muted/30">
