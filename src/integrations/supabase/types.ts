@@ -182,6 +182,42 @@ export type Database = {
           },
         ]
       }
+      enquiries: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          is_read: boolean
+          message: string | null
+          page_name: string
+          source_type: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          page_name?: string
+          source_type?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          page_name?: string
+          source_type?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           banner_image_url: string | null

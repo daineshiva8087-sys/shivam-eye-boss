@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { submitEnquiry } from "@/hooks/useEnquiryNotification";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -69,6 +70,16 @@ export function ServiceModal({
       });
 
       if (error) throw error;
+
+      // Send enquiry notification
+      submitEnquiry({
+        customer_name: formData.name,
+        customer_phone: formData.phone,
+        customer_email: formData.email,
+        message: `Service: ${formData.serviceType}${formData.address ? ` | Address: ${formData.address}` : ''}${formData.message ? ` | ${formData.message}` : ''}`,
+        page_name: "Services",
+        source_type: "service_booking",
+      });
 
       toast({
         title: "Booking Submitted!",

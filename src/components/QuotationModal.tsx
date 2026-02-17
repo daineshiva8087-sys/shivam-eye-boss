@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { submitEnquiry } from "@/hooks/useEnquiryNotification";
 import { Product, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { usePromoCode } from "@/hooks/usePromoCode";
@@ -90,6 +91,16 @@ export function QuotationModal({
       });
 
       if (error) throw error;
+
+      // Send enquiry notification
+      submitEnquiry({
+        customer_name: formData.name,
+        customer_phone: formData.phone,
+        customer_email: formData.email,
+        message: `Product: ${product.name}${appliedPromo ? ` | Promo: ${appliedPromo.code}` : ''}${formData.message ? ` | ${formData.message}` : ''}`,
+        page_name: "Product Page",
+        source_type: "quotation",
+      });
 
       toast({
         title: language === 'mr' ? 'विनंती सबमिट झाली!' : language === 'hi' ? 'अनुरोध सबमिट हुआ!' : 'Request Submitted!',

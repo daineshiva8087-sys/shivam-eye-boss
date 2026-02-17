@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { submitEnquiry } from "@/hooks/useEnquiryNotification";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { ComboOffer } from "./ComboCard";
@@ -53,6 +54,16 @@ export function ComboQuotationModal({
       });
 
       if (error) throw error;
+
+      // Send enquiry notification
+      submitEnquiry({
+        customer_name: formData.name,
+        customer_phone: formData.phone,
+        customer_email: formData.email,
+        message: `Combo: ${combo.name} (₹${combo.combo_price.toLocaleString("en-IN")})${formData.message ? ` | ${formData.message}` : ''}`,
+        page_name: "Combo Offers",
+        source_type: "combo_quotation",
+      });
 
       toast({
         title: "Request Submitted!",

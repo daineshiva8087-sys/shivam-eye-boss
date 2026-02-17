@@ -53,6 +53,7 @@ import {
   Receipt,
   Image,
   Megaphone,
+  MessageSquare,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
@@ -62,6 +63,7 @@ import { ServiceChargesManagement } from "@/components/admin/ServiceChargesManag
 import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 import { BannerManagement } from "@/components/admin/BannerManagement";
 import { AnnouncementManagement } from "@/components/admin/AnnouncementManagement";
+import { LeadsManagement } from "@/components/admin/LeadsManagement";
 
 interface ProductFormData {
   name: string;
@@ -366,6 +368,10 @@ export default function Admin() {
               <Wrench className="h-4 w-4" />
               Bookings
             </TabsTrigger>
+            <TabsTrigger value="leads" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Leads
+            </TabsTrigger>
             <TabsTrigger value="announcement" className="gap-2">
               <Megaphone className="h-4 w-4" />
               Announcement
@@ -576,6 +582,11 @@ export default function Admin() {
                 <p>No service bookings yet.</p>
               </div>
             )}
+          </TabsContent>
+
+          {/* Leads Tab */}
+          <TabsContent value="leads">
+            <LeadsManagement />
           </TabsContent>
 
           {/* Announcement Tab */}
