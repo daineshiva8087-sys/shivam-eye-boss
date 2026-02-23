@@ -65,7 +65,7 @@ export interface ServiceBooking {
 export const BUSINESS_INFO = {
   name: "Shivam CCTV",
   phone: "8087153702",
-  email: "daineshiva@gmail.com",
+  email: "support@shivamcctv.in",
   address: "Jay Bajrang Chowk, Chandanzira, Jalna – 431203",
   whatsappNumber: "918087153702",
   googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Jay+Bajrang+Chowk+Chandanzira+Jalna+431203",
