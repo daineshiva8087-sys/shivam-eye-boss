@@ -599,6 +599,11 @@ export default function Admin() {
           <TabsContent value="announcement">
             <AnnouncementManagement />
           </TabsContent>
+
+          {/* Visitors Tab */}
+          <TabsContent value="visitors">
+            <VisitorStats />
+          </TabsContent>
         </Tabs>
       </main>
 
