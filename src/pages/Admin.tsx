@@ -54,6 +54,7 @@ import {
   Image,
   Megaphone,
   MessageSquare,
+  Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
