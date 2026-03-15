@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { LanguagePrompt } from "@/components/LanguagePrompt";
 import SplashScreen from "@/components/SplashScreen";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -18,6 +19,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
+  useVisitorTracking();
+
   const [showSplash, setShowSplash] = useState(() => {
     // Only show splash on first visit per session
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');

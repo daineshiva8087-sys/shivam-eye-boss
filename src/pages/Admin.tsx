@@ -54,6 +54,7 @@ import {
   Image,
   Megaphone,
   MessageSquare,
+  Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
@@ -64,6 +65,7 @@ import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 import { BannerManagement } from "@/components/admin/BannerManagement";
 import { AnnouncementManagement } from "@/components/admin/AnnouncementManagement";
 import { LeadsManagement } from "@/components/admin/LeadsManagement";
+import { VisitorStats } from "@/components/admin/VisitorStats";
 
 interface ProductFormData {
   name: string;
@@ -376,6 +378,10 @@ export default function Admin() {
               <Megaphone className="h-4 w-4" />
               Announcement
             </TabsTrigger>
+            <TabsTrigger value="visitors" className="gap-2">
+              <Users className="h-4 w-4" />
+              Visitors
+            </TabsTrigger>
           </TabsList>
 
           {/* Products Tab */}
@@ -592,6 +598,11 @@ export default function Admin() {
           {/* Announcement Tab */}
           <TabsContent value="announcement">
             <AnnouncementManagement />
+          </TabsContent>
+
+          {/* Visitors Tab */}
+          <TabsContent value="visitors">
+            <VisitorStats />
           </TabsContent>
         </Tabs>
       </main>
