@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
+  useVisitorTracking();
+
   const [showSplash, setShowSplash] = useState(() => {
     // Only show splash on first visit per session
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');

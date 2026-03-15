@@ -377,6 +377,10 @@ export default function Admin() {
               <Megaphone className="h-4 w-4" />
               Announcement
             </TabsTrigger>
+            <TabsTrigger value="visitors" className="gap-2">
+              <Users className="h-4 w-4" />
+              Visitors
+            </TabsTrigger>
           </TabsList>
 
           {/* Products Tab */}
