@@ -64,6 +64,7 @@ import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 import { BannerManagement } from "@/components/admin/BannerManagement";
 import { AnnouncementManagement } from "@/components/admin/AnnouncementManagement";
 import { LeadsManagement } from "@/components/admin/LeadsManagement";
+import { VisitorStats } from "@/components/admin/VisitorStats";
 
 interface ProductFormData {
   name: string;
