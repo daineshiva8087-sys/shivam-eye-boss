@@ -64,15 +64,12 @@ export default function Auth() {
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2">
+          <Link to="/" className="inline-flex items-center" aria-label="Shivam CCTV home">
             <img 
-              src="/app-icon.png" 
-              alt="Shivam CCTV" 
-              className="h-12 w-12 rounded-lg object-cover"
+              src="/shivam-cctv-solution-logo.png"
+              alt="Shivam CCTV Solution"
+              className="h-32 w-32 max-w-full object-contain"
             />
-            <span className="font-display text-2xl font-bold text-foreground">
-              Shivam CCTV
-            </span>
           </Link>
           <h2 className="mt-6 font-display text-2xl font-bold text-foreground">
             {mode === "signin" ? "Welcome Back" : "Create Account"}

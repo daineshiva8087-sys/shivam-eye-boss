@@ -1,0 +1,1 @@
+Use the uploaded Shivam CCTV Solution logo directly from the public brand image for website branding; the original file bytes remain unchanged so the approved art is preserved.
