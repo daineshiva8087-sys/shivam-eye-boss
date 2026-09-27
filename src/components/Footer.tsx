@@ -2,6 +2,7 @@ import { Phone, Mail, MapPin, MessageCircle, Globe } from "lucide-react";
 import { BUSINESS_INFO } from "@/lib/supabase";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
+import brandLogo from "@/assets/shivam-cctv-solution-logo.png.asset.json";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -26,13 +27,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <img 
-                src="/app-icon.png" 
-                alt="Shivam CCTV" 
-                className="h-10 w-10 rounded-lg object-cover"
+                src={brandLogo.url}
+                alt="Shivam CCTV Solution"
+                className="h-28 w-28 max-w-full object-contain"
               />
-              <span className="font-display text-xl font-bold">Shivam CCTV</span>
             </div>
             <p className="text-sm text-muted-foreground">
               {t('footerTagline')}

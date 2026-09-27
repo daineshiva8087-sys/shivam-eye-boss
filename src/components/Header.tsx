@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import brandLogo from "@/assets/shivam-cctv-solution-logo.png.asset.json";
 
 export function Header() {
   const { user, isAdmin, signOut } = useAuth();
@@ -27,15 +28,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex shrink-0 items-center" aria-label="Shivam CCTV home">
           <img 
-            src="/app-icon.png" 
-            alt="Shivam CCTV" 
-            className="h-10 w-10 rounded-lg object-cover"
+            src={brandLogo.url}
+            alt="Shivam CCTV Solution"
+            className="h-14 w-14 object-contain"
           />
-          <span className="font-display text-xl font-bold text-foreground">
-            Shivam CCTV
-          </span>
         </Link>
 
         {/* Desktop Navigation */}
