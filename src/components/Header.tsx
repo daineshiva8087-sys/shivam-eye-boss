@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import brandLogo from "@/assets/shivam-cctv-solution-logo.png.asset.json";
 
 export function Header() {
   const { user, isAdmin, signOut } = useAuth();
@@ -30,7 +29,7 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex shrink-0 items-center" aria-label="Shivam CCTV home">
           <img 
-            src={brandLogo.url}
+            src="/shivam-cctv-solution-logo.png"
             alt="Shivam CCTV Solution"
             className="h-14 w-14 object-contain"
           />

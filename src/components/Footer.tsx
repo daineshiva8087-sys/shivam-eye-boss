@@ -2,7 +2,6 @@ import { Phone, Mail, MapPin, MessageCircle, Globe } from "lucide-react";
 import { BUSINESS_INFO } from "@/lib/supabase";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
-import brandLogo from "@/assets/shivam-cctv-solution-logo.png.asset.json";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -29,7 +28,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center">
               <img 
-                src={brandLogo.url}
+                src="/shivam-cctv-solution-logo.png"
                 alt="Shivam CCTV Solution"
                 className="h-28 w-28 max-w-full object-contain"
               />

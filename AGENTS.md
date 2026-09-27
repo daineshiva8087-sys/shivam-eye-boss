@@ -1,1 +1,1 @@
-Use the uploaded Shivam CCTV Solution logo through its Lovable Assets pointer for website branding; this preserves the approved image bytes and avoids duplicating binaries in the project.
+Use the uploaded Shivam CCTV Solution logo directly from the public brand image for website branding; the original file bytes remain unchanged so the approved art is preserved.

@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Loader2, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import brandLogo from "@/assets/shivam-cctv-solution-logo.png.asset.json";
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -67,7 +66,7 @@ export default function Auth() {
         <div className="text-center">
           <Link to="/" className="inline-flex items-center" aria-label="Shivam CCTV home">
             <img 
-              src={brandLogo.url}
+              src="/shivam-cctv-solution-logo.png"
               alt="Shivam CCTV Solution"
               className="h-32 w-32 max-w-full object-contain"
             />
