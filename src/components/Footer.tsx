@@ -74,11 +74,18 @@ export function Footer() {
                 WhatsApp
               </button>
               <a
-                href={`mailto:${BUSINESS_INFO.email}`}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                href={`mailto:${BUSINESS_INFO.primaryEmail}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors break-all"
               >
-                <Mail className="h-4 w-4 text-primary" />
-                {BUSINESS_INFO.email}
+                <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                {BUSINESS_INFO.primaryEmail}
+              </a>
+              <a
+                href={`mailto:${BUSINESS_INFO.businessEmail}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors break-all"
+              >
+                <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                {BUSINESS_INFO.businessEmail}
               </a>
               <button
                 onClick={handleOpenMaps}

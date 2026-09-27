@@ -22,7 +22,7 @@ export default function Contact() {
   };
 
   const handleEmail = () => {
-    window.open(`mailto:${BUSINESS_INFO.email}`, "_self");
+    window.open(`mailto:${BUSINESS_INFO.businessEmail}`, "_self");
   };
 
   return (
@@ -86,7 +86,24 @@ export default function Contact() {
                     <h3 className="font-display text-lg font-semibold text-foreground mb-1">
                       Email
                     </h3>
-                    <p className="text-muted-foreground mb-3">{BUSINESS_INFO.email}</p>
+                    <p className="text-muted-foreground">
+                      Email:{" "}
+                      <a
+                        href={`mailto:${BUSINESS_INFO.primaryEmail}`}
+                        className="break-all hover:text-foreground transition-colors"
+                      >
+                        {BUSINESS_INFO.primaryEmail}
+                      </a>
+                    </p>
+                    <p className="text-muted-foreground mb-3">
+                      Business Email:{" "}
+                      <a
+                        href={`mailto:${BUSINESS_INFO.businessEmail}`}
+                        className="break-all hover:text-foreground transition-colors"
+                      >
+                        {BUSINESS_INFO.businessEmail}
+                      </a>
+                    </p>
                     <Button onClick={handleEmail} variant="outline">
                       Send Email
                     </Button>
@@ -171,17 +188,29 @@ export default function Contact() {
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-8">
                 Customer Support
               </h2>
-              <div className="product-card rounded-xl p-6 md:p-8">
+              <div className="product-card rounded-xl p-6 md:p-8 space-y-3">
                 <a
-                  href={`mailto:support@shivamcctv.in?subject=${encodeURIComponent('Support Request - Shivam CCTV')}`}
+                  href={`mailto:${BUSINESS_INFO.businessEmail}?subject=${encodeURIComponent('Support Request - Shivam CCTV')}`}
                   className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Official Email</p>
-                    <p className="text-foreground font-semibold group-hover:text-primary transition-colors">support@shivamcctv.in</p>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Business Email</p>
+                    <p className="text-foreground font-semibold group-hover:text-primary transition-colors break-all">{BUSINESS_INFO.businessEmail}</p>
+                  </div>
+                </a>
+                <a
+                  href={`mailto:${BUSINESS_INFO.email}?subject=${encodeURIComponent('Support Request - Shivam CCTV')}`}
+                  className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Support Email</p>
+                    <p className="text-foreground font-semibold group-hover:text-primary transition-colors break-all">{BUSINESS_INFO.email}</p>
                   </div>
                 </a>
               </div>
