@@ -28,11 +28,15 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex shrink-0 items-center" aria-label="Shivam CCTV home">
-          <img 
-            src="/shivam-cctv-solution-logo.png"
-            alt="Shivam CCTV Solution"
-            className="h-14 w-14 object-contain"
-          />
+          <div
+            className="h-14 w-14 overflow-hidden rounded-[18px] bg-white shadow-md flex items-center justify-center"
+          >
+            <img
+              src="/shivam-cctv-solution-logo.png"
+              alt="Shivam CCTV Solution"
+              className="h-full w-full object-contain"
+            />
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
