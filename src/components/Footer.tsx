@@ -27,11 +27,15 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <img 
-                src="/shivam-cctv-solution-logo.png"
-                alt="Shivam CCTV Solution"
-                className="h-28 w-28 max-w-full object-contain"
-              />
+              <div
+                className="h-28 w-28 max-w-full overflow-hidden rounded-[32px] bg-white shadow-lg flex items-center justify-center"
+              >
+                <img
+                  src="/shivam-cctv-solution-logo.png"
+                  alt="Shivam CCTV Solution"
+                  className="h-full w-full object-contain"
+                />
+              </div>
             </div>
             <p className="text-sm text-muted-foreground">
               {t('footerTagline')}
