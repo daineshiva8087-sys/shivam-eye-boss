@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,11 @@ import {
   Megaphone,
   MessageSquare,
   Users,
+  BarChart3,
+  Boxes,
+  AlertTriangle,
+  ClipboardList,
+  TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
@@ -99,7 +105,12 @@ export default function Admin() {
   const [products, setProducts] = useState<Product[]>([]);
   const [quotationRequests, setQuotationRequests] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [productSearch, setProductSearch] = useState("");
+  const [productFilter, setProductFilter] = useState("all");
+  const [productSort, setProductSort] = useState("newest");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(defaultFormData);
@@ -123,10 +134,12 @@ export default function Admin() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [productsRes, quotationsRes, bookingsRes] = await Promise.all([
+      const [productsRes, quotationsRes, bookingsRes, leadsRes, offersRes] = await Promise.all([
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("quotation_requests").select("*").order("created_at", { ascending: false }),
         supabase.from("service_bookings").select("*").order("created_at", { ascending: false }),
+        supabase.from("enquiries").select("*").order("created_at", { ascending: false }),
+        supabase.from("offers").select("id, is_active"),
       ]);
 
       if (productsRes.data) {
@@ -141,6 +154,8 @@ export default function Admin() {
       }
       if (quotationsRes.data) setQuotationRequests(quotationsRes.data);
       if (bookingsRes.data) setBookings(bookingsRes.data);
+      if (leadsRes.data) setLeads(leadsRes.data);
+      if (offersRes.data) setOffers(offersRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -296,6 +311,45 @@ export default function Admin() {
     navigate("/");
   };
 
+  const productCategories = useMemo(
+    () => [...new Set(products.map((product) => product.category))].sort(),
+    [products]
+  );
+
+  const filteredAdminProducts = useMemo(() => {
+    const query = productSearch.trim().toLowerCase();
+    const filtered = products.filter((product) => {
+      const matchesSearch = !query || [product.name, product.category, product.description || ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+      const matchesFilter = productFilter === "all"
+        || (productFilter === "available" && product.is_available)
+        || (productFilter === "unavailable" && !product.is_available)
+        || (productFilter === "low" && product.stock_quantity > 0 && product.stock_quantity <= 10)
+        || (productFilter === "out" && product.stock_quantity === 0);
+      return matchesSearch && matchesFilter;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (productSort === "name") return a.name.localeCompare(b.name);
+      if (productSort === "price-low") return a.price - b.price;
+      if (productSort === "price-high") return b.price - a.price;
+      if (productSort === "stock") return a.stock_quantity - b.stock_quantity;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [products, productFilter, productSearch, productSort]);
+
+  const dashboardMetrics = [
+    { label: "Total products", value: products.length, detail: `${products.filter((product) => product.is_available).length} active`, icon: Package },
+    { label: "Stock attention", value: products.filter((product) => product.stock_quantity <= 10).length, detail: `${products.filter((product) => product.stock_quantity === 0).length} out of stock`, icon: AlertTriangle },
+    { label: "Categories", value: productCategories.length, detail: "Across the catalogue", icon: Boxes },
+    { label: "Quote requests", value: quotationRequests.length, detail: `${quotationRequests.filter((request) => request.status === "pending").length} pending`, icon: FileText },
+    { label: "Service bookings", value: bookings.length, detail: `${bookings.filter((booking) => booking.status === "pending").length} pending`, icon: Wrench },
+    { label: "Unread leads", value: leads.filter((lead) => !lead.is_read).length, detail: `${leads.length} total enquiries`, icon: MessageSquare },
+    { label: "Active offers", value: offers.filter((offer) => offer.is_active).length, detail: `${offers.length} total offers`, icon: Sparkles },
+  ];
+
   if (authLoading || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -336,8 +390,12 @@ export default function Admin() {
 
       {/* Main Content */}
       <main className="container py-8">
-        <Tabs defaultValue="products">
+         <Tabs defaultValue="dashboard">
           <TabsList className="mb-8 flex-wrap h-auto gap-1">
+             <TabsTrigger value="dashboard" className="gap-2">
+               <BarChart3 className="h-4 w-4" />
+               Dashboard
+             </TabsTrigger>
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
               Products
@@ -384,22 +442,100 @@ export default function Admin() {
             </TabsTrigger>
           </TabsList>
 
+           <TabsContent value="dashboard" className="space-y-8">
+             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+               <div>
+                 <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Operations overview</p>
+                 <h2 className="font-display text-3xl font-bold">Good to see you, Shivam.</h2>
+                 <p className="mt-1 text-muted-foreground">Keep the catalogue, requests, and service pipeline moving.</p>
+               </div>
+               <Button onClick={handleAddNew} className="w-full gap-2 md:w-auto">
+                 <Plus className="h-4 w-4" />
+                 Add product
+               </Button>
+             </div>
+
+             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+               {dashboardMetrics.map(({ label, value, detail, icon: Icon }) => (
+                 <div key={label} className="rounded-lg border border-border bg-card p-5 shadow-sm">
+                   <div className="flex items-start justify-between gap-3">
+                     <div>
+                       <p className="text-sm text-muted-foreground">{label}</p>
+                       <p className="mt-2 font-display text-3xl font-bold">{value}</p>
+                     </div>
+                     <div className="rounded-md bg-primary/10 p-2 text-primary"><Icon className="h-5 w-5" /></div>
+                   </div>
+                   <p className="mt-3 text-xs text-muted-foreground">{detail}</p>
+                 </div>
+               ))}
+             </div>
+
+             <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+               <div className="rounded-lg border border-border bg-card p-5">
+                 <div className="mb-5 flex items-center justify-between gap-3">
+                   <div>
+                     <h3 className="font-display text-xl font-bold">Catalogue health</h3>
+                     <p className="text-sm text-muted-foreground">Availability and stock signals from your products.</p>
+                   </div>
+                   <TrendingUp className="h-5 w-5 text-primary" />
+                 </div>
+                 <div className="space-y-4">
+                   {[
+                     ["Available", products.filter((product) => product.is_available).length, "bg-primary"],
+                     ["Low stock", products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length, "bg-yellow-500"],
+                     ["Out of stock", products.filter((product) => product.stock_quantity === 0).length, "bg-destructive"],
+                   ].map(([label, value, color]) => {
+                     const total = Math.max(products.length, 1);
+                     return <div key={label as string} className="space-y-2">
+                       <div className="flex justify-between text-sm"><span>{label}</span><span className="font-medium">{value}</span></div>
+                       <div className="h-2 overflow-hidden rounded-full bg-muted"><div className={`h-full ${color}`} style={{ width: `${Math.min(100, (Number(value) / total) * 100)}%` }} /></div>
+                     </div>;
+                   })}
+                 </div>
+               </div>
+               <div className="rounded-lg border border-border bg-card p-5">
+                 <div className="mb-5 flex items-center gap-3"><ClipboardList className="h-5 w-5 text-primary" /><div><h3 className="font-display text-xl font-bold">Next actions</h3><p className="text-sm text-muted-foreground">Priorities for today.</p></div></div>
+                 <div className="space-y-3 text-sm">
+                   <button type="button" onClick={() => setProductFilter("out")} className="flex w-full items-center justify-between border-b border-border pb-3 text-left hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></button>
+                   <button type="button" onClick={() => setProductFilter("low")} className="flex w-full items-center justify-between border-b border-border pb-3 text-left hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></button>
+                   <button type="button" onClick={() => setProductFilter("all")} className="flex w-full items-center justify-between text-left hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></button>
+                 </div>
+               </div>
+             </div>
+           </TabsContent>
+
           {/* Products Tab */}
           <TabsContent value="products">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-2xl font-bold">Products</h2>
+             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+               <div><h2 className="font-display text-2xl font-bold">Products</h2><p className="text-sm text-muted-foreground">Manage the catalogue customers use to request quotes.</p></div>
               <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>
             </div>
 
+             <div className="mb-6 grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-[1fr_auto_auto]">
+               <Input value={productSearch} onChange={(event) => setProductSearch(event.target.value)} placeholder="Search products, categories, descriptions" />
+               <Select value={productFilter} onValueChange={setProductFilter}>
+                 <SelectTrigger className="w-full md:w-44"><SelectValue placeholder="Filter stock" /></SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="all">All products</SelectItem><SelectItem value="available">Available</SelectItem><SelectItem value="unavailable">Unavailable</SelectItem><SelectItem value="low">Low stock</SelectItem><SelectItem value="out">Out of stock</SelectItem>
+                 </SelectContent>
+               </Select>
+               <Select value={productSort} onValueChange={setProductSort}>
+                 <SelectTrigger className="w-full md:w-44"><SelectValue placeholder="Sort products" /></SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="newest">Newest first</SelectItem><SelectItem value="name">Name A–Z</SelectItem><SelectItem value="price-low">Price low–high</SelectItem><SelectItem value="price-high">Price high–low</SelectItem><SelectItem value="stock">Lowest stock</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+
             {loading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : products.length > 0 ? (
-              <div className="rounded-lg border border-border overflow-hidden">
+             ) : filteredAdminProducts.length > 0 ? (
+               <div className="overflow-x-auto rounded-lg border border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -414,7 +550,7 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => (
+                     {filteredAdminProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>
                           {product.image_url ? (
@@ -473,10 +609,10 @@ export default function Admin() {
                   </TableBody>
                 </Table>
               </div>
-            ) : (
+             ) : (
               <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
                 <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No products yet. Add your first product!</p>
+                 <p>{products.length ? "No products match these filters." : "No products yet. Add your first product!"}</p>
               </div>
             )}
           </TabsContent>
