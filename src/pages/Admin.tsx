@@ -112,6 +112,7 @@ export default function Admin() {
   const [productSearch, setProductSearch] = useState("");
   const [productFilter, setProductFilter] = useState("all");
   const [productSort, setProductSort] = useState("newest");
+  const [activeSection, setActiveSection] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -410,7 +411,7 @@ export default function Admin() {
 
       {/* Main Content */}
        <main className="container py-8">
-          <Tabs defaultValue="dashboard" onValueChange={() => setMobileNavOpen(false)}>
+          <Tabs value={activeSection} onValueChange={(value) => { setActiveSection(value); setMobileNavOpen(false); }}>
            <div className={`${mobileNavOpen ? "block" : "hidden"} mb-6 md:block`}>
              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-card p-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12">
                {adminSections.map(({ value, label, icon: Icon }) => (
@@ -476,9 +477,9 @@ export default function Admin() {
                <div className="rounded-lg border border-border bg-card p-5">
                  <div className="mb-5 flex items-center gap-3"><ClipboardList className="h-5 w-5 text-primary" /><div><h3 className="font-display text-xl font-bold">Next actions</h3><p className="text-sm text-muted-foreground">Priorities for today.</p></div></div>
                  <div className="space-y-3 text-sm">
-                   <Button type="button" variant="ghost" onClick={() => setProductFilter("out")} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></Button>
-                   <Button type="button" variant="ghost" onClick={() => setProductFilter("low")} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></Button>
-                   <Button type="button" variant="ghost" onClick={() => setProductFilter("all")} className="h-auto w-full justify-between px-0 text-left font-normal hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => { setProductFilter("out"); setActiveSection("products"); }} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => { setProductFilter("low"); setActiveSection("products"); }} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => { setProductFilter("all"); setActiveSection("products"); }} className="h-auto w-full justify-between px-0 text-left font-normal hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></Button>
                  </div>
                </div>
              </div>
