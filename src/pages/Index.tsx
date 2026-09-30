@@ -157,6 +157,12 @@ const Index = () => {
     setDetailModalOpen(true);
   };
 
+  const handleDetailQuote = () => {
+    if (selectedProduct) {
+      handleRequestQuote(selectedProduct);
+    }
+  };
+
   const services = [
     {
       icon: Camera,
@@ -185,9 +191,6 @@ const Index = () => {
       <Header />
 
       <main className="flex-1">
-        {/* Offer Banner */}
-        <OfferBanner />
-
         {/* Hero Section */}
         <HeroSection onBookService={handleOpenServiceModal} />
 
@@ -212,19 +215,23 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Banner Slider - After Search, Before Products */}
+        {/* Offers and banners support product discovery without interrupting the catalogue. */}
+        <OfferBanner />
         <BannerSlider />
 
         {/* Products Section */}
         <section className="py-16" id="products">
           <div className="container">
-            <div className="text-center mb-12">
+            <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {t('ourProducts')}
               </h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
+              <p className="text-muted-foreground max-w-xl">
                 {t('ourProductsDescription')}
               </p>
+              </div>
+              <p className="text-sm text-muted-foreground">{filteredProducts.length} products available</p>
             </div>
 
             {/* Category Filter */}
@@ -341,7 +348,7 @@ const Index = () => {
         product={selectedProduct}
         open={detailModalOpen}
         onOpenChange={setDetailModalOpen}
-        onRequestQuote={() => handleRequestQuote(selectedProduct!)}
+        onRequestQuote={handleDetailQuote}
       />
       <OfferPopup />
     </div>

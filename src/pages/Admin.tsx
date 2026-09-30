@@ -61,6 +61,7 @@ import {
   AlertTriangle,
   ClipboardList,
   TrendingUp,
+  Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { OfferManagement } from "@/components/admin/OfferManagement";
@@ -111,6 +112,8 @@ export default function Admin() {
   const [productSearch, setProductSearch] = useState("");
   const [productFilter, setProductFilter] = useState("all");
   const [productSort, setProductSort] = useState("newest");
+  const [activeSection, setActiveSection] = useState("dashboard");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(defaultFormData);
@@ -350,6 +353,21 @@ export default function Admin() {
     { label: "Active offers", value: offers.filter((offer) => offer.is_active).length, detail: `${offers.length} total offers`, icon: Sparkles },
   ];
 
+  const adminSections = [
+    { value: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { value: "products", label: "Products", icon: Package },
+    { value: "banners", label: "Banners", icon: Image },
+    { value: "services", label: "Services", icon: Wrench },
+    { value: "offers", label: "Offers", icon: Sparkles },
+    { value: "combos", label: "Combos", icon: Gift },
+    { value: "quotations", label: "Quotations", icon: Receipt },
+    { value: "requests", label: "Requests", icon: FileText },
+    { value: "bookings", label: "Bookings", icon: Wrench },
+    { value: "leads", label: "Leads", icon: MessageSquare },
+    { value: "announcement", label: "Announcement", icon: Megaphone },
+    { value: "visitors", label: "Visitors", icon: Users },
+  ];
+
   if (authLoading || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -361,9 +379,12 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background">
       {/* Admin Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-card">
-        <div className="container flex h-16 items-center justify-between">
+       <header className="sticky top-0 z-50 w-full border-b border-border bg-card">
+         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
+             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileNavOpen((open) => !open)} aria-label="Toggle admin navigation">
+               <Menu className="h-5 w-5" />
+             </Button>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <Camera className="h-6 w-6 text-primary-foreground" />
             </div>
@@ -389,58 +410,18 @@ export default function Admin() {
       </header>
 
       {/* Main Content */}
-      <main className="container py-8">
-         <Tabs defaultValue="dashboard">
-          <TabsList className="mb-8 flex-wrap h-auto gap-1">
-             <TabsTrigger value="dashboard" className="gap-2">
-               <BarChart3 className="h-4 w-4" />
-               Dashboard
-             </TabsTrigger>
-            <TabsTrigger value="products" className="gap-2">
-              <Package className="h-4 w-4" />
-              Products
-            </TabsTrigger>
-            <TabsTrigger value="banners" className="gap-2">
-              <Image className="h-4 w-4" />
-              Banners
-            </TabsTrigger>
-            <TabsTrigger value="services" className="gap-2">
-              <Wrench className="h-4 w-4" />
-              Services
-            </TabsTrigger>
-            <TabsTrigger value="offers" className="gap-2">
-              <Sparkles className="h-4 w-4" />
-              Offers
-            </TabsTrigger>
-            <TabsTrigger value="combos" className="gap-2">
-              <Gift className="h-4 w-4" />
-              Combos
-            </TabsTrigger>
-            <TabsTrigger value="quotations" className="gap-2">
-              <Receipt className="h-4 w-4" />
-              Quotations
-            </TabsTrigger>
-            <TabsTrigger value="requests" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Requests
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="gap-2">
-              <Wrench className="h-4 w-4" />
-              Bookings
-            </TabsTrigger>
-            <TabsTrigger value="leads" className="gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Leads
-            </TabsTrigger>
-            <TabsTrigger value="announcement" className="gap-2">
-              <Megaphone className="h-4 w-4" />
-              Announcement
-            </TabsTrigger>
-            <TabsTrigger value="visitors" className="gap-2">
-              <Users className="h-4 w-4" />
-              Visitors
-            </TabsTrigger>
-          </TabsList>
+       <main className="container py-8">
+          <Tabs value={activeSection} onValueChange={(value) => { setActiveSection(value); setMobileNavOpen(false); }}>
+           <div className={`${mobileNavOpen ? "block" : "hidden"} mb-6 md:block`}>
+             <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-card p-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12">
+               {adminSections.map(({ value, label, icon: Icon }) => (
+                 <TabsTrigger key={value} value={value} className="min-h-10 gap-2 border border-transparent px-2 text-xs data-[state=active]:border-primary/30 data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:text-sm">
+                   <Icon className="h-4 w-4 shrink-0" />
+                   <span className="truncate">{label}</span>
+                 </TabsTrigger>
+               ))}
+             </TabsList>
+           </div>
 
            <TabsContent value="dashboard" className="space-y-8">
              <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -480,10 +461,10 @@ export default function Admin() {
                    <TrendingUp className="h-5 w-5 text-primary" />
                  </div>
                  <div className="space-y-4">
-                   {[
-                     ["Available", products.filter((product) => product.is_available).length, "bg-primary"],
-                     ["Low stock", products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length, "bg-yellow-500"],
-                     ["Out of stock", products.filter((product) => product.stock_quantity === 0).length, "bg-destructive"],
+                    {[
+                      ["Available", products.filter((product) => product.is_available).length, "bg-primary"],
+                      ["Low stock", products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length, "bg-warning"],
+                      ["Out of stock", products.filter((product) => product.stock_quantity === 0).length, "bg-destructive"],
                    ].map(([label, value, color]) => {
                      const total = Math.max(products.length, 1);
                      return <div key={label as string} className="space-y-2">
@@ -496,9 +477,9 @@ export default function Admin() {
                <div className="rounded-lg border border-border bg-card p-5">
                  <div className="mb-5 flex items-center gap-3"><ClipboardList className="h-5 w-5 text-primary" /><div><h3 className="font-display text-xl font-bold">Next actions</h3><p className="text-sm text-muted-foreground">Priorities for today.</p></div></div>
                  <div className="space-y-3 text-sm">
-                   <button type="button" onClick={() => setProductFilter("out")} className="flex w-full items-center justify-between border-b border-border pb-3 text-left hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></button>
-                   <button type="button" onClick={() => setProductFilter("low")} className="flex w-full items-center justify-between border-b border-border pb-3 text-left hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></button>
-                   <button type="button" onClick={() => setProductFilter("all")} className="flex w-full items-center justify-between text-left hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></button>
+                   <Button type="button" variant="ghost" onClick={() => { setProductFilter("out"); setActiveSection("products"); }} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => { setProductFilter("low"); setActiveSection("products"); }} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => { setProductFilter("all"); setActiveSection("products"); }} className="h-auto w-full justify-between px-0 text-left font-normal hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></Button>
                  </div>
                </div>
              </div>
