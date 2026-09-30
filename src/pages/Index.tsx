@@ -157,6 +157,12 @@ const Index = () => {
     setDetailModalOpen(true);
   };
 
+  const handleDetailQuote = () => {
+    if (selectedProduct) {
+      handleRequestQuote(selectedProduct);
+    }
+  };
+
   const services = [
     {
       icon: Camera,
@@ -342,7 +348,7 @@ const Index = () => {
         product={selectedProduct}
         open={detailModalOpen}
         onOpenChange={setDetailModalOpen}
-        onRequestQuote={() => handleRequestQuote(selectedProduct!)}
+        onRequestQuote={handleDetailQuote}
       />
       <OfferPopup />
     </div>
