@@ -460,10 +460,10 @@ export default function Admin() {
                    <TrendingUp className="h-5 w-5 text-primary" />
                  </div>
                  <div className="space-y-4">
-                   {[
-                     ["Available", products.filter((product) => product.is_available).length, "bg-primary"],
-                     ["Low stock", products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length, "bg-yellow-500"],
-                     ["Out of stock", products.filter((product) => product.stock_quantity === 0).length, "bg-destructive"],
+                    {[
+                      ["Available", products.filter((product) => product.is_available).length, "bg-primary"],
+                      ["Low stock", products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length, "bg-warning"],
+                      ["Out of stock", products.filter((product) => product.stock_quantity === 0).length, "bg-destructive"],
                    ].map(([label, value, color]) => {
                      const total = Math.max(products.length, 1);
                      return <div key={label as string} className="space-y-2">
@@ -476,9 +476,9 @@ export default function Admin() {
                <div className="rounded-lg border border-border bg-card p-5">
                  <div className="mb-5 flex items-center gap-3"><ClipboardList className="h-5 w-5 text-primary" /><div><h3 className="font-display text-xl font-bold">Next actions</h3><p className="text-sm text-muted-foreground">Priorities for today.</p></div></div>
                  <div className="space-y-3 text-sm">
-                   <button type="button" onClick={() => setProductFilter("out")} className="flex w-full items-center justify-between border-b border-border pb-3 text-left hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></button>
-                   <button type="button" onClick={() => setProductFilter("low")} className="flex w-full items-center justify-between border-b border-border pb-3 text-left hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></button>
-                   <button type="button" onClick={() => setProductFilter("all")} className="flex w-full items-center justify-between text-left hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></button>
+                   <Button type="button" variant="ghost" onClick={() => setProductFilter("out")} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Review out-of-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity === 0).length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => setProductFilter("low")} className="h-auto w-full justify-between border-b border-border px-0 pb-3 text-left font-normal hover:text-primary"><span>Check low-stock products</span><Badge variant="secondary">{products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10).length}</Badge></Button>
+                   <Button type="button" variant="ghost" onClick={() => setProductFilter("all")} className="h-auto w-full justify-between px-0 text-left font-normal hover:text-primary"><span>Open full catalogue</span><Badge variant="secondary">{products.length}</Badge></Button>
                  </div>
                </div>
              </div>
